@@ -48,7 +48,7 @@ export default function Coin3D({
           <meshStandardMaterial 
             color="#ffd700"
             metalness={0.9}
-            roughness: 0.1,
+            roughness={0.1}
             emissive="#ffb700"
             emissiveIntensity={0.3}
           />
@@ -60,7 +60,7 @@ export default function Coin3D({
           <meshStandardMaterial 
             color="#ffd700"
             metalness={0.9}
-            roughness: 0.1,
+            roughness={0.1}
             emissive="#ffb700"
             emissiveIntensity={0.3}
           />

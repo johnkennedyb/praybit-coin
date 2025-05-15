@@ -36,6 +36,9 @@ const CoinTapper = ({ onTap, coins, coinsPerTap }: CoinTapperProps) => {
         <div className="text-sm text-blue-300 mt-1">
           Praybit Coin • PRAY
         </div>
+        <div className="mt-2 px-3 py-1 bg-green-600/20 rounded-full text-xs text-green-400 font-medium border border-green-500/30">
+          Exchange Ready
+        </div>
       </div>
       
       <Button 
@@ -50,9 +53,12 @@ const CoinTapper = ({ onTap, coins, coinsPerTap }: CoinTapperProps) => {
         <p className="text-center text-blue-200">
           Mine <span className="font-bold text-yellow-400">{coinsPerTap} PRAY</span> tokens
         </p>
-        <p className="text-xs text-blue-300 mt-1">
-          Ready for exchange listing
-        </p>
+        <div className="flex items-center gap-2 mt-2">
+          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+          <p className="text-xs text-green-400">
+            ERC-20 Standard Compliant
+          </p>
+        </div>
       </div>
     </div>
   );
