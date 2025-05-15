@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { BrowserProvider, JsonRpcSigner, formatEther, Contract } from 'ethers';
+import { BrowserProvider, JsonRpcSigner, formatEther, Contract, parseEther } from 'ethers';
 import { MetaMaskSDK } from '@metamask/sdk';
 import { PRAYBIT_TOKEN_ABI, PRAYBIT_TOKEN_ADDRESS } from '@/lib/contracts/PraybitToken';
 import { toast } from '@/hooks/use-toast';
@@ -168,7 +168,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
     
     try {
       const contract = new Contract(PRAYBIT_TOKEN_ADDRESS, PRAYBIT_TOKEN_ABI, signer);
-      const parsedAmount = ethers.parseEther(amount);
+      const parsedAmount = parseEther(amount);
       
       // Show pending toast
       toast({
