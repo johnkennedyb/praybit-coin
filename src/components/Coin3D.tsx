@@ -1,7 +1,7 @@
 
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF, Float } from '@react-three/drei';
+import { Float } from '@react-three/drei';
 import { Mesh } from 'three';
 
 export default function Coin3D({ 
@@ -35,7 +35,7 @@ export default function Coin3D({
     <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.5}>
       <mesh ref={mesh} onClick={onClick} castShadow receiveShadow>
         <cylinderGeometry args={[2, 2, 0.2, 32]} />
-        <meshStandardMaterial
+        <meshStandardMaterial 
           color="#ffc107"
           metalness={0.8}
           roughness={0.2}

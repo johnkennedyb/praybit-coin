@@ -7,36 +7,52 @@ import AppLayout from "@/components/AppLayout";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import CoinScene from "@/components/CoinScene";
+import { useWeb3 } from "@/contexts/Web3Context";
+import ConnectWalletButton from "@/components/ConnectWalletButton";
 
 const Earn = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const isMobile = useIsMobile();
-  
-  const [coins, setCoins] = useState(() => {
-    const saved = localStorage.getItem("praybitCoins");
-    return saved ? parseInt(saved) : 0;
-  });
+  const { account, praybitBalance } = useWeb3();
   
   const [tapsCount, setTapsCount] = useState(() => {
     const saved = localStorage.getItem("praybitTaps");
     return saved ? parseInt(saved) : 0;
   });
   
-  const earnCoins = () => {
+  const earnCoins = async () => {
     setIsAnimating(true);
-    setCoins(prev => prev + 1);
     setTapsCount(prev => prev + 1);
-    
-    localStorage.setItem("praybitCoins", (coins + 1).toString());
     localStorage.setItem("praybitTaps", (tapsCount + 1).toString());
+    
+    // If connected to wallet, we could mint tokens here
+    if (account) {
+      // In a real app, we would call a smart contract function to mint tokens
+      toast({
+        title: "Mining PRAY",
+        description: "You tapped and earned 1 PRAY token!",
+      });
+    } else {
+      toast({
+        title: "Wallet Not Connected",
+        description: "Connect your wallet to earn real PRAY tokens",
+      });
+    }
     
     setTimeout(() => setIsAnimating(false), 300);
   };
   
   const claimDailyReward = () => {
-    setCoins(prev => prev + 5);
-    localStorage.setItem("praybitCoins", (coins + 5).toString());
+    if (!account) {
+      toast({
+        title: "Wallet Not Connected",
+        description: "Connect your wallet to claim rewards",
+        variant: "destructive"
+      });
+      return;
+    }
     
+    // In a real app, we would call a smart contract function to claim rewards
     toast({
       title: "Daily Reward Claimed!",
       description: "You earned 5 PRAY coins",
@@ -54,9 +70,17 @@ const Earn = () => {
       <div className="space-y-6">
         <div className="text-center">
           <div className="text-5xl font-bold bg-gradient-to-br from-yellow-200 to-yellow-500 bg-clip-text text-transparent">
-            {coins} <span className="text-lg">PRAY</span>
+            {account ? praybitBalance : "0"} <span className="text-lg">PRAY</span>
           </div>
           <p className="text-blue-200 text-sm mt-1">Total Taps: {tapsCount}</p>
+          
+          {!account && (
+            <div className="mt-4">
+              <ConnectWalletButton 
+                className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium"
+              />
+            </div>
+          )}
         </div>
         
         <Card className="bg-indigo-800/40 border-indigo-700/60 backdrop-blur-md shadow-xl overflow-hidden">

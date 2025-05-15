@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -16,14 +15,19 @@ import {
   Shield,
   Key,
   ChevronRight,
-  Settings
+  Settings,
+  Send
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useWeb3 } from "@/contexts/Web3Context";
+import ConnectWalletButton from "@/components/ConnectWalletButton";
+import TransferModal from "@/components/TransferModal";
 
 const Profile = () => {
-  const [walletAddress, setWalletAddress] = useState("0x71C7656EC7ab88b098defB751B7401B5f6d8976F");
+  const { account, praybitBalance, ethBalance } = useWeb3();
   const [copied, setCopied] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showTransferModal, setShowTransferModal] = useState(false);
   
   // Login form state
   const [email, setEmail] = useState("");
@@ -40,9 +44,11 @@ const Profile = () => {
   const [showLoginForm, setShowLoginForm] = useState(true);
   
   const copyWalletAddress = () => {
-    navigator.clipboard.writeText(walletAddress);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    if (account) {
+      navigator.clipboard.writeText(account);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
   
   const handleLogin = (e: React.FormEvent) => {
@@ -90,6 +96,13 @@ const Profile = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  // Function to view wallet on block explorer
+  const viewOnExplorer = () => {
+    if (account) {
+      window.open(`https://etherscan.io/address/${account}`, '_blank');
+    }
   };
 
   return (
@@ -232,39 +245,75 @@ const Profile = () => {
           <>
             <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Wallet className="h-5 w-5 text-yellow-400" />
-                  Your Wallet
+                <CardTitle className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Wallet className="h-5 w-5 text-yellow-400" />
+                    Blockchain Wallet
+                  </div>
+                  <ConnectWalletButton />
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="bg-blue-900/50 p-4 rounded-lg border border-blue-700">
-                  <div className="text-sm text-blue-200 mb-1">Wallet Address</div>
-                  <div className="flex items-center justify-between">
-                    <div className="font-mono text-sm overflow-hidden text-ellipsis">
-                      {walletAddress}
+                {account ? (
+                  <>
+                    <div className="bg-blue-900/50 p-4 rounded-lg border border-blue-700">
+                      <div className="text-sm text-blue-200 mb-1">Wallet Address</div>
+                      <div className="flex items-center justify-between">
+                        <div className="font-mono text-sm overflow-hidden text-ellipsis">
+                          {account}
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={copyWalletAddress}>
+                          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      </div>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={copyWalletAddress}>
-                      {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    </Button>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-blue-900/50 p-4 rounded-lg border border-blue-700">
+                        <div className="text-xs text-blue-200">PRAY Balance</div>
+                        <div className="font-bold text-xl">{praybitBalance} PRAY</div>
+                      </div>
+                      <div className="bg-blue-900/50 p-4 rounded-lg border border-blue-700">
+                        <div className="text-xs text-blue-200">ETH Balance</div>
+                        <div className="font-bold text-xl">{parseFloat(ethBalance).toFixed(4)} ETH</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3">
+                      <Button 
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-medium"
+                        onClick={viewOnExplorer}
+                      >
+                        View on Explorer
+                        <ExternalLink className="ml-2 h-4 w-4" />
+                      </Button>
+                      
+                      <Button 
+                        className="flex-1 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium"
+                        onClick={() => setShowTransferModal(true)}
+                      >
+                        <Send className="mr-2 h-4 w-4" />
+                        Transfer PRAY
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-8 text-center space-y-4">
+                    <div className="bg-blue-900/30 rounded-full p-4 inline-block mx-auto">
+                      <Wallet className="h-10 w-10 text-yellow-400" />
+                    </div>
+                    <h3 className="text-lg font-medium">Connect Your Wallet</h3>
+                    <p className="text-sm text-blue-200">
+                      Connect your MetaMask wallet to access your PRAY tokens and make transactions
+                    </p>
+                    <div className="pt-2">
+                      <ConnectWalletButton 
+                        variant="default"
+                        className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium"
+                      />
+                    </div>
                   </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-blue-900/50 p-4 rounded-lg border border-blue-700">
-                    <div className="text-xs text-blue-200">Balance</div>
-                    <div className="font-bold text-xl">285 PRAY</div>
-                  </div>
-                  <div className="bg-blue-900/50 p-4 rounded-lg border border-blue-700">
-                    <div className="text-xs text-blue-200">Value</div>
-                    <div className="font-bold text-xl">$9.98</div>
-                  </div>
-                </div>
-                
-                <Button className="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium">
-                  View on Explorer
-                  <ExternalLink className="ml-2 h-4 w-4" />
-                </Button>
+                )}
               </CardContent>
             </Card>
             
@@ -305,6 +354,12 @@ const Profile = () => {
                 </Button>
               </CardFooter>
             </Card>
+
+            {/* Transfer Modal */}
+            <TransferModal 
+              isOpen={showTransferModal} 
+              onClose={() => setShowTransferModal(false)} 
+            />
           </>
         )}
       </div>
