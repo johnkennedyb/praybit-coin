@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { BrowserProvider, JsonRpcSigner, formatEther } from 'ethers';
-import { MetaMaskSDK } from '@metamask/sdk-react';
+import { BrowserProvider, JsonRpcSigner, formatEther, ethers, Contract } from 'ethers';
+import { MetaMaskSDK } from '@metamask/sdk';
 import { PRAYBIT_TOKEN_ABI, PRAYBIT_TOKEN_ADDRESS } from '@/lib/contracts/PraybitToken';
 import { toast } from '@/hooks/use-toast';
 
@@ -56,7 +56,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
       setEthBalance(formatEther(balance));
 
       // Get PRAY token balance using contract
-      const contract = new ethers.Contract(PRAYBIT_TOKEN_ADDRESS, PRAYBIT_TOKEN_ABI, currentSigner);
+      const contract = new Contract(PRAYBIT_TOKEN_ADDRESS, PRAYBIT_TOKEN_ABI, currentSigner);
       const tokenBalance = await contract.balanceOf(address);
       setPraybitBalance(formatEther(tokenBalance));
     } catch (error) {
@@ -162,7 +162,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
     }
     
     try {
-      const contract = new ethers.Contract(PRAYBIT_TOKEN_ADDRESS, PRAYBIT_TOKEN_ABI, signer);
+      const contract = new Contract(PRAYBIT_TOKEN_ADDRESS, PRAYBIT_TOKEN_ABI, signer);
       const parsedAmount = ethers.parseEther(amount);
       
       // Show pending toast
