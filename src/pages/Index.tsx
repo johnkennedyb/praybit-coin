@@ -2,15 +2,15 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Coins, Rocket, ChevronRight, BarChart2, Zap, Users } from "lucide-react";
+import { Coins, Rocket, ChevronRight, ShareNetwork, Zap, Users } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import CoinScene from "@/components/CoinScene";
 
 const Index = () => {
   const stats = [
-    { label: "Total Users", value: "12,354", icon: <Users className="h-5 w-5 text-blue-400" /> },
-    { label: "Market Cap", value: "$1.2M", icon: <Coins className="h-5 w-5 text-yellow-400" /> },
-    { label: "Holders", value: "2,543", icon: <BarChart2 className="h-5 w-5 text-green-400" /> },
+    { label: "Total Users", value: "0", icon: <Users className="h-5 w-5 text-blue-400" /> },
+    { label: "Market Cap", value: "Coming Soon", icon: <Coins className="h-5 w-5 text-yellow-400" /> },
+    { label: "Holders", value: "0", icon: <Users className="h-5 w-5 text-green-400" /> },
   ];
   
   const features = [
@@ -21,16 +21,16 @@ const Index = () => {
       link: "/earn"
     },
     {
-      title: "Track Stats",
-      description: "View your earnings and the PRAY market performance",
-      icon: <BarChart2 className="h-8 w-8 text-blue-400" />,
-      link: "/stats"
+      title: "Referrals",
+      description: "Invite friends and earn rewards for each referral",
+      icon: <ShareNetwork className="h-8 w-8 text-blue-400" />,
+      link: "/referral"
     },
     {
-      title: "Telegram Bot",
-      description: "Manage your PRAY coins on the go with our Telegram bot",
+      title: "Social Media",
+      description: "Connect with the PRAY community on social media",
       icon: <Rocket className="h-8 w-8 text-purple-400" />,
-      link: "/telegram"
+      link: "/social"
     }
   ];
 
@@ -38,22 +38,20 @@ const Index = () => {
     <AppLayout showHeader={false}>
       <div className="flex flex-col justify-between min-h-[calc(100vh-4rem)]">
         {/* Hero Section */}
-        <div className="py-8 text-center space-y-4">
-          <div className="flex justify-center mb-4">
-            <div className="h-48 w-48">
-              <CoinScene />
-            </div>
+        <div className="py-4 text-center">
+          <div className="mx-auto max-w-md">
+            <CoinScene size="large" />
           </div>
           
           <h1 className="text-4xl font-bold tracking-tighter bg-gradient-to-br from-yellow-200 to-yellow-400 bg-clip-text text-transparent">
             Praybit Coin
           </h1>
           
-          <p className="text-blue-200 max-w-md mx-auto">
+          <p className="text-blue-200 max-w-md mx-auto mt-2">
             The community-driven meme coin with real utility. Earn, trade, and transact with PRAY.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
             <Button asChild className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-indigo-900 font-medium">
               <Link to="/earn">
                 <Zap className="mr-2 h-4 w-4" />

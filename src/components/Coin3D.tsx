@@ -37,11 +37,11 @@ export default function Coin3D({
         <mesh castShadow receiveShadow position={[0, 0, 0.05]}>
           <cylinderGeometry args={[2, 2, 0.1, 64]} />
           <meshStandardMaterial 
-            color="#ffd700"
-            metalness={0.9}
-            roughness={0.1}
+            color="#ffdd3a"
+            metalness={0.95}
+            roughness={0.05}
             emissive="#ffb700"
-            emissiveIntensity={0.5}
+            emissiveIntensity={0.6}
           />
         </mesh>
         
@@ -49,11 +49,11 @@ export default function Coin3D({
         <mesh castShadow receiveShadow position={[0, 0, -0.05]}>
           <cylinderGeometry args={[2, 2, 0.1, 64]} />
           <meshStandardMaterial 
-            color="#ffd700"
-            metalness={0.9}
-            roughness={0.1}
+            color="#ffdd3a"
+            metalness={0.95}
+            roughness={0.05}
             emissive="#ffb700"
-            emissiveIntensity={0.5}
+            emissiveIntensity={0.6}
           />
         </mesh>
         
@@ -61,11 +61,11 @@ export default function Coin3D({
         <mesh castShadow receiveShadow rotation={[Math.PI/2, 0, 0]}>
           <torusGeometry args={[2, 0.18, 24, 96]} />
           <meshStandardMaterial 
-            color="#ffd700"
-            metalness={0.95}
-            roughness={0.1}
-            emissive="#ff8f00"
-            emissiveIntensity={0.4}
+            color="#ffe24d"
+            metalness={0.98}
+            roughness={0.05}
+            emissive="#ff9500"
+            emissiveIntensity={0.5}
           />
         </mesh>
         
@@ -73,9 +73,11 @@ export default function Coin3D({
         <mesh castShadow receiveShadow position={[0, 0, 0.11]}>
           <ringGeometry args={[1.6, 1.9, 64]} />
           <meshStandardMaterial 
-            color="#ffe373"
-            metalness={0.9}
-            roughness={0.2}
+            color="#fff5b3"
+            metalness={0.92}
+            roughness={0.1}
+            emissive="#fff0a0"
+            emissiveIntensity={0.3}
           />
         </mesh>
         
@@ -83,9 +85,11 @@ export default function Coin3D({
         <mesh castShadow receiveShadow position={[0, 0, -0.11]}>
           <ringGeometry args={[1.6, 1.9, 64]} />
           <meshStandardMaterial 
-            color="#ffe373"
-            metalness={0.9}
-            roughness={0.2}
+            color="#fff5b3"
+            metalness={0.92}
+            roughness={0.1}
+            emissive="#fff0a0"
+            emissiveIntensity={0.3}
           />
         </mesh>
         
@@ -96,19 +100,19 @@ export default function Coin3D({
               font="/fonts/Inter_Bold.json"
               size={0.28}
               height={0.08}
-              curveSegments={16}
+              curveSegments={32}
               bevelEnabled
-              bevelThickness={0.01}
-              bevelSize={0.005}
-              bevelSegments={3}
+              bevelThickness={0.02}
+              bevelSize={0.01}
+              bevelSegments={5}
             >
               PRAYBIT
               <meshStandardMaterial 
                 color="#ffffff"
-                metalness={0.8}
-                roughness={0.1}
+                metalness={0.85}
+                roughness={0.05}
                 emissive="#ffffff"
-                emissiveIntensity={0.2}
+                emissiveIntensity={0.4}
               />
             </Text3D>
           </Center>
@@ -121,19 +125,19 @@ export default function Coin3D({
               font="/fonts/Inter_Bold.json"
               size={0.28}
               height={0.08}
-              curveSegments={16}
+              curveSegments={32}
               bevelEnabled
-              bevelThickness={0.01}
-              bevelSize={0.005}
-              bevelSegments={3}
+              bevelThickness={0.02}
+              bevelSize={0.01}
+              bevelSegments={5}
             >
               COIN
               <meshStandardMaterial 
                 color="#ffffff"
-                metalness={0.8}
-                roughness={0.1}
+                metalness={0.85}
+                roughness={0.05}
                 emissive="#ffffff"
-                emissiveIntensity={0.2}
+                emissiveIntensity={0.4}
               />
             </Text3D>
           </Center>
@@ -144,20 +148,20 @@ export default function Coin3D({
           <Text3D
             font="/fonts/Inter_Bold.json"
             size={1.2}
-            height={0.15}
-            curveSegments={24}
+            height={0.2}
+            curveSegments={32}
             bevelEnabled
-            bevelThickness={0.03}
-            bevelSize={0.02}
-            bevelSegments={5}
+            bevelThickness={0.05}
+            bevelSize={0.03}
+            bevelSegments={8}
           >
             P
             <meshStandardMaterial 
               color="#ffffff"
-              metalness={0.9}
-              roughness={0.05}
+              metalness={0.95}
+              roughness={0.02}
               emissive="#ffffff"
-              emissiveIntensity={0.4}
+              emissiveIntensity={0.5}
             />
           </Text3D>
         </Center>
@@ -167,20 +171,20 @@ export default function Coin3D({
           <Text3D
             font="/fonts/Inter_Bold.json"
             size={0.8}
-            height={0.12}
-            curveSegments={16}
+            height={0.15}
+            curveSegments={24}
             bevelEnabled
-            bevelThickness={0.02}
-            bevelSize={0.01}
-            bevelSegments={3}
+            bevelThickness={0.03}
+            bevelSize={0.02}
+            bevelSegments={5}
           >
             2025
             <meshStandardMaterial 
               color="#ffffff"
-              metalness={0.85}
-              roughness={0.15}
+              metalness={0.9}
+              roughness={0.1}
               emissive="#ffffff"
-              emissiveIntensity={0.2}
+              emissiveIntensity={0.3}
             />
           </Text3D>
         </Center>
@@ -190,8 +194,10 @@ export default function Coin3D({
           <circleGeometry args={[0.12, 32]} />
           <meshStandardMaterial 
             color="#ffffff"
-            metalness={0.9}
-            roughness={0.1}
+            metalness={0.95}
+            roughness={0.05}
+            emissive="#ffffff"
+            emissiveIntensity={0.3}
           />
         </mesh>
         
@@ -199,8 +205,10 @@ export default function Coin3D({
           <circleGeometry args={[0.12, 32]} />
           <meshStandardMaterial 
             color="#ffffff"
-            metalness={0.9}
-            roughness={0.1}
+            metalness={0.95}
+            roughness={0.05}
+            emissive="#ffffff"
+            emissiveIntensity={0.3}
           />
         </mesh>
       </group>

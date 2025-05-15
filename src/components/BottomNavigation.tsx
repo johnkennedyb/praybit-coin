@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { Coins, Home, User, BarChart2, MessageCircle } from "lucide-react";
+import { Coins, Home, User, ShareNetwork, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const BottomNavigation = () => {
@@ -11,8 +11,8 @@ const BottomNavigation = () => {
   const navItems = [
     { path: "/", label: "Home", icon: <Home /> },
     { path: "/earn", label: "Earn", icon: <Coins /> },
-    { path: "/stats", label: "Stats", icon: <BarChart2 /> },
-    { path: "/telegram", label: "Telegram", icon: <MessageCircle /> },
+    { path: "/referral", label: "Referral", icon: <ShareNetwork /> },
+    { path: "/social", label: "Social", icon: <Share2 /> },
     { path: "/profile", label: "Profile", icon: <User /> },
   ];
   

@@ -7,6 +7,7 @@ import Coin3D from './Coin3D';
 interface CoinSceneProps {
   isAnimating?: boolean;
   onTap?: () => void;
+  size?: "small" | "medium" | "large";
 }
 
 function Loader() {
@@ -23,9 +24,22 @@ function Loader() {
   );
 }
 
-export default function CoinScene({ isAnimating = false, onTap = () => {} }: CoinSceneProps) {
+export default function CoinScene({ 
+  isAnimating = false, 
+  onTap = () => {},
+  size = "medium" 
+}: CoinSceneProps) {
+  // Adjust canvas dimensions based on size prop
+  const getHeight = () => {
+    switch(size) {
+      case "small": return "h-32";
+      case "large": return "h-96";
+      default: return "h-64";
+    }
+  };
+  
   return (
-    <div className="h-64 w-full">
+    <div className={`${getHeight()} w-full`}>
       <Canvas
         camera={{ position: [0, 0, 5], fov: 45 }}
         className="cursor-pointer"
@@ -41,10 +55,10 @@ export default function CoinScene({ isAnimating = false, onTap = () => {} }: Coi
             snap={{ mass: 4, tension: 300 }}
           >
             <Environment preset="sunset" />
-            <ambientLight intensity={0.6} />
-            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1.2} castShadow />
-            <directionalLight position={[-5, 5, 5]} intensity={1} castShadow />
-            <pointLight position={[-10, -10, -10]} intensity={0.7} />
+            <ambientLight intensity={0.8} />
+            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1.5} castShadow />
+            <directionalLight position={[-5, 5, 5]} intensity={1.2} castShadow />
+            <pointLight position={[-10, -10, -10]} intensity={0.9} />
             <Coin3D isAnimating={isAnimating} onClick={onTap} />
           </PresentationControls>
         </Suspense>
