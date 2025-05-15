@@ -1,145 +1,125 @@
 
-import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Coins, UserPlus, HandCoins, Wallet } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
-import CoinTapper from "@/components/CoinTapper";
-import ReferralSystem from "@/components/ReferralSystem";
-import Stats from "@/components/Stats";
+import { Coins, Rocket, ChevronRight, BarChart2, Zap, Users } from "lucide-react";
+import AppLayout from "@/components/AppLayout";
 
 const Index = () => {
-  const [coins, setCoins] = useState(() => {
-    const saved = localStorage.getItem("praybitCoins");
-    return saved ? parseInt(saved) : 0;
-  });
+  const stats = [
+    { label: "Total Users", value: "12,354", icon: <Users className="h-5 w-5 text-blue-400" /> },
+    { label: "Market Cap", value: "$1.2M", icon: <Coins className="h-5 w-5 text-yellow-400" /> },
+    { label: "Holders", value: "2,543", icon: <BarChart2 className="h-5 w-5 text-green-400" /> },
+  ];
   
-  const [tapsCount, setTapsCount] = useState(() => {
-    const saved = localStorage.getItem("praybitTaps");
-    return saved ? parseInt(saved) : 0;
-  });
-
-  const [coinsPerTap, setCoinsPerTap] = useState(1);
-  const [referrals, setReferrals] = useState(() => {
-    const saved = localStorage.getItem("praybitReferrals");
-    return saved ? parseInt(saved) : 0;
-  });
-  
-  const isMobile = useIsMobile();
-
-  // Save coins to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem("praybitCoins", coins.toString());
-    localStorage.setItem("praybitTaps", tapsCount.toString());
-    localStorage.setItem("praybitReferrals", referrals.toString());
-  }, [coins, tapsCount, referrals]);
-
-  const handleTap = useCallback(() => {
-    setCoins(prev => prev + coinsPerTap);
-    setTapsCount(prev => prev + 1);
-  }, [coinsPerTap]);
-
-  const handleReferral = useCallback(() => {
-    // Generate a referral link
-    const referralLink = `${window.location.origin}/?ref=${Date.now()}`;
-    navigator.clipboard.writeText(referralLink);
-    toast({
-      title: "Referral Link Copied!",
-      description: "Share this link with friends to earn bonus coins!",
-    });
-    // In a real app, you would track this referral in a database
-    setReferrals(prev => prev + 1);
-    // Give reward for sharing
-    setCoins(prev => prev + 10);
-  }, []);
-
-  const connectWallet = useCallback(() => {
-    toast({
-      title: "Wallet Connection",
-      description: "Wallet connection feature coming soon!",
-    });
-  }, []);
+  const features = [
+    {
+      title: "Earn PRAY",
+      description: "Tap to earn PRAY coins and complete tasks for rewards",
+      icon: <Zap className="h-8 w-8 text-yellow-400" />,
+      link: "/earn"
+    },
+    {
+      title: "Track Stats",
+      description: "View your earnings and the PRAY market performance",
+      icon: <BarChart2 className="h-8 w-8 text-blue-400" />,
+      link: "/stats"
+    },
+    {
+      title: "Telegram Bot",
+      description: "Manage your PRAY coins on the go with our Telegram bot",
+      icon: <Rocket className="h-8 w-8 text-purple-400" />,
+      link: "/telegram"
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-900 to-black text-white">
-      <div className="container mx-auto px-4 py-8">
-        <header className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-2">
-            <Coins className="h-8 w-8 text-yellow-400" />
-            <h1 className="text-3xl font-bold">Praybit Coin</h1>
+    <AppLayout showHeader={false}>
+      <div className="flex flex-col justify-between min-h-[calc(100vh-4rem)]">
+        {/* Hero Section */}
+        <div className="py-8 text-center space-y-4">
+          <div className="flex justify-center mb-6">
+            <div className="bg-gradient-to-br from-yellow-300 to-yellow-600 p-4 rounded-full shadow-lg shadow-yellow-600/20">
+              <Coins className="h-12 w-12 text-blue-900" />
+            </div>
           </div>
-          <Button variant="outline" onClick={connectWallet}>
-            <Wallet className="mr-2 h-4 w-4" />
-            Connect Wallet
-          </Button>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card className="bg-blue-800 border-blue-700">
-              <CardHeader>
-                <CardTitle className="text-center text-2xl">Tap to Earn PRAY Coins</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center">
-                <CoinTapper onTap={handleTap} coins={coins} coinsPerTap={coinsPerTap} />
-              </CardContent>
-              <CardFooter className="flex justify-center">
-                <p className="text-sm text-blue-300">You've tapped {tapsCount} times</p>
-              </CardFooter>
-            </Card>
-          </div>
-
-          <div className="space-y-4">
-            <Stats coins={coins} tapsCount={tapsCount} referrals={referrals} />
-            
-            <Card className="bg-blue-800 border-blue-700">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UserPlus className="h-5 w-5 text-yellow-400" />
-                  Referral System
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ReferralSystem onRefer={handleReferral} referralCount={referrals} />
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-blue-800 border-blue-700">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <HandCoins className="h-5 w-5 text-yellow-400" />
-                  Praybit Rewards
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="mb-4">Earn more coins by completing tasks:</p>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex justify-between">
-                    <span>• Daily login</span>
-                    <span>+5 PRAY</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>• Refer a friend</span>
-                    <span>+10 PRAY</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span>• Connect wallet</span>
-                    <span>+50 PRAY</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Link to="/about" className="text-sm text-blue-300 hover:text-blue-100 transition-colors w-full text-center">
-                  Learn more about Praybit Coin
-                </Link>
-              </CardFooter>
-            </Card>
+          
+          <h1 className="text-4xl font-bold tracking-tighter bg-gradient-to-br from-yellow-200 to-yellow-400 bg-clip-text text-transparent">
+            Praybit Coin
+          </h1>
+          
+          <p className="text-blue-200 max-w-md mx-auto">
+            The community-driven meme coin with real utility. Earn, trade, and transact with PRAY.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+            <Button asChild className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium">
+              <Link to="/earn">
+                <Zap className="mr-2 h-4 w-4" />
+                Start Earning
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="border-blue-500">
+              <Link to="/about">Learn More</Link>
+            </Button>
           </div>
         </div>
+        
+        {/* Stats Section */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          {stats.map((stat, i) => (
+            <Card key={i} className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
+              <CardContent className="p-3 text-center">
+                <div className="flex justify-center mb-1">
+                  {stat.icon}
+                </div>
+                <div className="font-bold text-lg">{stat.value}</div>
+                <div className="text-xs text-blue-300">{stat.label}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        
+        {/* Features Section */}
+        <div className="space-y-4 mb-6">
+          {features.map((feature, i) => (
+            <Link key={i} to={feature.link}>
+              <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl hover:bg-blue-700/50 transition-colors">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-blue-900/70 p-2 rounded-lg">
+                        {feature.icon}
+                      </div>
+                      <div>
+                        <h3 className="font-medium">{feature.title}</h3>
+                        <p className="text-xs text-blue-200">{feature.description}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-blue-300" />
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+        
+        {/* CTA Section */}
+        <Card className="bg-gradient-to-r from-blue-900 to-purple-900 border-blue-700 shadow-xl mb-8">
+          <CardContent className="p-5 text-center">
+            <h3 className="font-bold text-xl mb-2">Join the Community</h3>
+            <p className="text-sm text-blue-100 mb-4">
+              Be part of the PRAY ecosystem and help shape its future.
+            </p>
+            <Button asChild variant="outline" className="border-white/40 bg-white/10 hover:bg-white/20">
+              <Link to="/profile">
+                Create Account
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 
