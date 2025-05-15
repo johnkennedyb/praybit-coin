@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useWeb3 } from '@/contexts/Web3Context';
 
 interface PrayData {
   coins: number;
@@ -17,6 +18,7 @@ const defaultData: PrayData = {
 };
 
 export function usePrayData() {
+  const { account } = useWeb3();
   const [data, setData] = useState<PrayData>(() => {
     const savedData = localStorage.getItem('praybitData');
     return savedData ? JSON.parse(savedData) : defaultData;
@@ -45,12 +47,14 @@ export function usePrayData() {
   };
   
   const incrementTaps = () => {
+    // When connected to MetaMask, we track taps but coins are handled by the blockchain
     const miningPower = Math.floor(1 + (data.tapsCount / 100));
     
     setData(prev => ({
       ...prev,
       tapsCount: prev.tapsCount + 1,
-      coins: prev.coins + miningPower, // Add coins based on current mining power
+      // Only update the local coin count if not connected to wallet
+      coins: !account ? prev.coins + miningPower : prev.coins,
     }));
   };
   
@@ -58,7 +62,8 @@ export function usePrayData() {
     setData(prev => ({
       ...prev,
       referrals: prev.referrals + 1,
-      coins: prev.coins + 10, // Add 10 coins per referral
+      // Only update the local coin count if not connected to wallet
+      coins: !account ? prev.coins + 10 : prev.coins, // Add 10 coins per referral
     }));
   };
   
@@ -72,7 +77,8 @@ export function usePrayData() {
     setData(prev => ({
       ...prev,
       lastDailyReward: today,
-      coins: prev.coins + 5, // Add 5 coins for daily reward
+      // Only update the local coin count if not connected to wallet
+      coins: !account ? prev.coins + 5 : prev.coins, // Add 5 coins for daily reward
     }));
     
     return true; // Successfully claimed

@@ -14,8 +14,8 @@ function Loader() {
   return (
     <Html center>
       <div className="flex flex-col items-center justify-center">
-        <div className="h-12 w-12 rounded-full border-4 border-t-yellow-400 border-b-yellow-400 border-r-transparent border-l-transparent animate-spin"></div>
-        <div className="mt-4 text-yellow-400 font-medium">
+        <div className="h-12 w-12 rounded-full border-4 border-t-amber-400 border-b-amber-400 border-r-transparent border-l-transparent animate-spin"></div>
+        <div className="mt-4 text-amber-400 font-medium">
           {progress.toFixed(0)}% loaded
         </div>
       </div>
@@ -27,7 +27,7 @@ export default function CoinScene({ isAnimating = false, onTap = () => {} }: Coi
   return (
     <div className="h-64 w-full">
       <Canvas
-        camera={{ position: [0, 0, 5], fov: 50 }}
+        camera={{ position: [0, 0, 5], fov: 45 }}
         className="cursor-pointer"
         shadows
       >
@@ -41,10 +41,10 @@ export default function CoinScene({ isAnimating = false, onTap = () => {} }: Coi
             snap={{ mass: 4, tension: 300 }}
           >
             <Environment preset="sunset" />
-            <ambientLight intensity={0.5} />
-            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
-            <directionalLight position={[-5, 5, 5]} intensity={0.8} castShadow />
-            <pointLight position={[-10, -10, -10]} intensity={0.5} />
+            <ambientLight intensity={0.6} />
+            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1.2} castShadow />
+            <directionalLight position={[-5, 5, 5]} intensity={1} castShadow />
+            <pointLight position={[-10, -10, -10]} intensity={0.7} />
             <Coin3D isAnimating={isAnimating} onClick={onTap} />
           </PresentationControls>
         </Suspense>

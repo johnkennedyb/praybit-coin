@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Coins, Zap } from "lucide-react";
+import { Coins, Zap, Sparkles } from "lucide-react";
 
 interface CoinTapperProps {
   onTap: () => void;
@@ -30,19 +30,20 @@ const CoinTapper = ({ onTap, coins, coinsPerTap }: CoinTapperProps) => {
   return (
     <div className="flex flex-col items-center gap-6 py-8">
       <div className="flex flex-col items-center">
-        <div className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent">
+        <div className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
           {formatNumber(coins)} <span className="text-base text-yellow-200">PRAY</span>
         </div>
-        <div className="text-sm text-blue-300 mt-1">
+        <div className="text-sm text-indigo-300 mt-1">
           Praybit Coin • PRAY
         </div>
-        <div className="mt-2 px-3 py-1 bg-green-600/20 rounded-full text-xs text-green-400 font-medium border border-green-500/30">
-          Exchange Ready
+        <div className="mt-2 px-3 py-1 bg-indigo-600/20 rounded-full text-xs text-indigo-400 font-medium border border-indigo-500/30 flex items-center gap-1">
+          <Sparkles className="h-3 w-3 text-yellow-400" />
+          <span>ERC-20 Token</span>
         </div>
       </div>
       
       <Button 
-        className={`h-32 w-32 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 shadow-lg shadow-amber-600/30 transition-all ${isAnimating ? 'scale-95' : 'scale-100'}`}
+        className={`h-32 w-32 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 hover:from-amber-300 hover:via-yellow-400 hover:to-amber-500 shadow-lg shadow-amber-600/30 transition-all ${isAnimating ? 'scale-95' : 'scale-100'}`}
         size="lg"
         onClick={handleTap}
       >
@@ -50,21 +51,21 @@ const CoinTapper = ({ onTap, coins, coinsPerTap }: CoinTapperProps) => {
       </Button>
       
       <div className="flex flex-col items-center">
-        <p className="text-center text-blue-200">
+        <p className="text-center text-indigo-200">
           Mine <span className="font-bold text-yellow-400">{coinsPerTap} PRAY</span> tokens
         </p>
         <div className="flex items-center gap-2 mt-2">
-          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-          <p className="text-xs text-green-400">
+          <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+          <p className="text-xs text-indigo-400">
             ERC-20 Standard Compliant
           </p>
         </div>
         
         {coinsPerTap > 1 && (
-          <div className="mt-3 px-4 py-1.5 bg-blue-900/50 rounded-lg border border-blue-700/60">
+          <div className="mt-3 px-4 py-1.5 bg-indigo-900/50 rounded-lg border border-indigo-700/60">
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-yellow-400" />
-              <p className="text-xs text-blue-200">
+              <p className="text-xs text-indigo-200">
                 Mining power: <span className="font-medium text-yellow-400">{coinsPerTap}x</span>
               </p>
             </div>
