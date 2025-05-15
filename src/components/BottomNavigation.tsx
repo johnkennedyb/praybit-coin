@@ -17,20 +17,24 @@ const BottomNavigation = () => {
   ];
   
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-blue-900/90 backdrop-blur-lg border-t border-blue-700 flex items-center justify-around z-50">
+    <nav className="fixed bottom-0 left-0 right-0 h-16 bg-indigo-900/80 backdrop-blur-lg border-t border-indigo-700/50 flex items-center justify-around z-50 shadow-lg">
       {navItems.map((item) => (
         <Link
           key={item.path}
           to={item.path}
           className={cn(
-            "flex flex-col items-center justify-center px-3 py-1 text-xs transition-colors",
+            "flex flex-col items-center justify-center px-3 py-1 text-xs relative transition-all",
             isActive(item.path)
               ? "text-yellow-400"
-              : "text-blue-200 hover:text-white"
+              : "text-indigo-200 hover:text-white"
           )}
         >
           <div className="h-6 w-6 mb-1">{item.icon}</div>
           <span>{item.label}</span>
+          
+          {isActive(item.path) && (
+            <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-10 h-1 bg-yellow-400 rounded-t-full"></span>
+          )}
         </Link>
       ))}
     </nav>

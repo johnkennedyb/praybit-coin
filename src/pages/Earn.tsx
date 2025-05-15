@@ -6,6 +6,7 @@ import { Coins, Gift, Award, TrendingUp } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import CoinScene from "@/components/CoinScene";
 
 const Earn = () => {
   const [isAnimating, setIsAnimating] = useState(false);
@@ -58,31 +59,28 @@ const Earn = () => {
           <p className="text-blue-200 text-sm mt-1">Total Taps: {tapsCount}</p>
         </div>
         
-        <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
+        <Card className="bg-indigo-800/40 border-indigo-700/60 backdrop-blur-md shadow-xl overflow-hidden">
           <CardHeader className="text-center pb-0">
-            <CardTitle className="text-2xl">Tap to Earn</CardTitle>
+            <CardTitle className="text-2xl bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+              Tap to Earn
+            </CardTitle>
           </CardHeader>
-          <CardContent className="flex justify-center py-8">
-            <Button 
-              className={`h-32 w-32 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 hover:from-yellow-300 hover:to-amber-500 shadow-lg shadow-amber-600/20 transition-all ${isAnimating ? 'scale-95' : 'scale-100'}`}
-              onClick={earnCoins}
-            >
-              <Coins className="h-16 w-16 text-white" />
-            </Button>
+          <CardContent className="flex flex-col items-center py-4">
+            <CoinScene isAnimating={isAnimating} onTap={earnCoins} />
+            <p className="text-sm text-blue-200 mt-4">Tap the coin to earn PRAY</p>
           </CardContent>
-          <CardFooter className="flex justify-center">
-            <p className="text-sm text-blue-200">Tap to earn 1 PRAY coin</p>
-          </CardFooter>
         </Card>
         
-        <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
+        <Card className="bg-indigo-800/40 border-indigo-700/60 backdrop-blur-md shadow-xl">
           <CardHeader>
-            <CardTitle>Complete Tasks</CardTitle>
+            <CardTitle className="bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+              Complete Tasks
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {tasks.map((task, index) => (
-                <div key={index} className="flex items-center justify-between bg-blue-900/50 rounded-lg p-3 border border-blue-700">
+                <div key={index} className="flex items-center justify-between bg-indigo-900/50 rounded-lg p-3 border border-indigo-700/60 transition hover:bg-indigo-800/50">
                   <div className="flex items-center gap-3">
                     {task.icon}
                     <span>{task.name}</span>
@@ -90,7 +88,7 @@ const Earn = () => {
                   <Button 
                     variant="outline"
                     size="sm"
-                    className="border-yellow-500 text-yellow-400 hover:bg-yellow-500 hover:text-blue-900"
+                    className="border-yellow-500 text-yellow-400 hover:bg-yellow-500 hover:text-indigo-900"
                     onClick={task.action}
                   >
                     +{task.reward} PRAY
