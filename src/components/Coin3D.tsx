@@ -1,8 +1,8 @@
 
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Float, Text3D, Center, useTexture } from '@react-three/drei';
-import { Mesh, MeshStandardMaterial } from 'three';
+import { Float, Text3D, Center } from '@react-three/drei';
+import { Mesh } from 'three';
 
 export default function Coin3D({ 
   isAnimating = false,
@@ -12,15 +12,6 @@ export default function Coin3D({
   onClick?: () => void;
 }) {
   const mesh = useRef<Mesh>(null!);
-  
-  // For coin edge texture
-  const edgeMaterial = new MeshStandardMaterial({
-    color: "#ffd700",
-    metalness: 0.9,
-    roughness: 0.2,
-    emissive: "#ff8f00",
-    emissiveIntensity: 0.2
-  });
   
   // Simple rotation animation
   useFrame((state, delta) => {
@@ -69,7 +60,13 @@ export default function Coin3D({
         {/* Coin edge */}
         <mesh castShadow receiveShadow rotation={[Math.PI/2, 0, 0]}>
           <torusGeometry args={[2, 0.18, 16, 64]} />
-          {edgeMaterial}
+          <meshStandardMaterial 
+            color="#ffd700"
+            metalness={0.9}
+            roughness={0.2}
+            emissive="#ff8f00"
+            emissiveIntensity={0.2}
+          />
         </mesh>
         
         {/* Ring embossed on coin - front */}

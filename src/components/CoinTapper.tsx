@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Coins } from "lucide-react";
+import { Coins, Zap } from "lucide-react";
 
 interface CoinTapperProps {
   onTap: () => void;
@@ -59,6 +59,17 @@ const CoinTapper = ({ onTap, coins, coinsPerTap }: CoinTapperProps) => {
             ERC-20 Standard Compliant
           </p>
         </div>
+        
+        {coinsPerTap > 1 && (
+          <div className="mt-3 px-4 py-1.5 bg-blue-900/50 rounded-lg border border-blue-700/60">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-yellow-400" />
+              <p className="text-xs text-blue-200">
+                Mining power: <span className="font-medium text-yellow-400">{coinsPerTap}x</span>
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

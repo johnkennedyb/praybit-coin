@@ -6,12 +6,14 @@ interface PrayData {
   tapsCount: number;
   referrals: number;
   lastDailyReward?: string;
+  miningPower?: number;
 }
 
 const defaultData: PrayData = {
   coins: 0,
   tapsCount: 0,
   referrals: 0,
+  miningPower: 1
 };
 
 export function usePrayData() {
@@ -24,6 +26,17 @@ export function usePrayData() {
     localStorage.setItem('praybitData', JSON.stringify(data));
   }, [data]);
   
+  // Calculate and update mining power based on taps
+  useEffect(() => {
+    const miningPower = Math.floor(1 + (data.tapsCount / 100));
+    if (miningPower !== data.miningPower) {
+      setData(prev => ({
+        ...prev,
+        miningPower
+      }));
+    }
+  }, [data.tapsCount, data.miningPower]);
+  
   const updateCoins = (amount: number) => {
     setData(prev => ({
       ...prev,
@@ -32,10 +45,12 @@ export function usePrayData() {
   };
   
   const incrementTaps = () => {
+    const miningPower = Math.floor(1 + (data.tapsCount / 100));
+    
     setData(prev => ({
       ...prev,
       tapsCount: prev.tapsCount + 1,
-      coins: prev.coins + 1, // Add 1 coin per tap
+      coins: prev.coins + miningPower, // Add coins based on current mining power
     }));
   };
   
@@ -65,6 +80,7 @@ export function usePrayData() {
   
   const resetData = () => {
     setData(defaultData);
+    localStorage.removeItem('praybitData');
   };
   
   return {
