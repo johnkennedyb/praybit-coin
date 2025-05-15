@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Coins, ArrowLeft, Wallet, Bitcoin, Link2 } from "lucide-react";
+import { Coins, ArrowLeft, Wallet, Bitcoin, Link2, HandCoins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
