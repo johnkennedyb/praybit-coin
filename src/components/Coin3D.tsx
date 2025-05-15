@@ -1,8 +1,8 @@
 
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Float, Text3D, Center } from '@react-three/drei';
-import { Mesh } from 'three';
+import { Float, Text3D, Center, useTexture } from '@react-three/drei';
+import { Mesh, MeshStandardMaterial } from 'three';
 
 export default function Coin3D({ 
   isAnimating = false,
@@ -12,6 +12,15 @@ export default function Coin3D({
   onClick?: () => void;
 }) {
   const mesh = useRef<Mesh>(null!);
+  
+  // For coin edge texture
+  const edgeMaterial = new MeshStandardMaterial({
+    color: "#ffd700",
+    metalness: 0.9,
+    roughness: 0.2,
+    emissive: "#ff8f00",
+    emissiveIntensity: 0.2
+  });
   
   // Simple rotation animation
   useFrame((state, delta) => {
@@ -33,33 +42,130 @@ export default function Coin3D({
   return (
     <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.5}>
       <group ref={mesh} onClick={onClick}>
-        {/* Coin base */}
-        <mesh castShadow receiveShadow>
-          <cylinderGeometry args={[2, 2, 0.2, 32]} />
+        {/* Coin base - front face */}
+        <mesh castShadow receiveShadow position={[0, 0, 0.05]}>
+          <cylinderGeometry args={[2, 2, 0.1, 64]} />
           <meshStandardMaterial 
-            color="#ffc107"
-            metalness={0.8}
-            roughness={0.2}
-            emissive="#ff8f00"
-            emissiveIntensity={0.2}
+            color="#ffd700"
+            metalness={0.9}
+            roughness: 0.1,
+            emissive="#ffb700"
+            emissiveIntensity={0.3}
           />
         </mesh>
         
-        {/* Letter P on the coin */}
-        <Center position={[0, 0.15, 0]}>
+        {/* Coin base - back face */}
+        <mesh castShadow receiveShadow position={[0, 0, -0.05]}>
+          <cylinderGeometry args={[2, 2, 0.1, 64]} />
+          <meshStandardMaterial 
+            color="#ffd700"
+            metalness={0.9}
+            roughness: 0.1,
+            emissive="#ffb700"
+            emissiveIntensity={0.3}
+          />
+        </mesh>
+        
+        {/* Coin edge */}
+        <mesh castShadow receiveShadow rotation={[Math.PI/2, 0, 0]}>
+          <torusGeometry args={[2, 0.18, 16, 64]} />
+          {edgeMaterial}
+        </mesh>
+        
+        {/* Ring embossed on coin - front */}
+        <mesh castShadow receiveShadow position={[0, 0, 0.11]}>
+          <ringGeometry args={[1.6, 1.9, 64]} />
+          <meshStandardMaterial 
+            color="#ffdc73"
+            metalness={0.8}
+            roughness={0.3}
+          />
+        </mesh>
+        
+        {/* Ring embossed on coin - back */}
+        <mesh castShadow receiveShadow position={[0, 0, -0.11]}>
+          <ringGeometry args={[1.6, 1.9, 64]} />
+          <meshStandardMaterial 
+            color="#ffdc73"
+            metalness={0.8}
+            roughness={0.3}
+          />
+        </mesh>
+        
+        {/* "PRAYBIT" text curved around top of coin - front */}
+        <group position={[0, 0.8, 0.12]} rotation={[0, 0, 0]}>
+          <Center>
+            <Text3D
+              font="/fonts/Inter_Bold.json"
+              size={0.3}
+              height={0.05}
+              curveSegments={12}
+            >
+              PRAYBIT
+              <meshStandardMaterial 
+                color="#ffffff"
+                metalness={0.7}
+                roughness={0.2}
+              />
+            </Text3D>
+          </Center>
+        </group>
+        
+        {/* "COIN" text curved around bottom of coin - front */}
+        <group position={[0, -0.8, 0.12]} rotation={[0, 0, 0]}>
+          <Center>
+            <Text3D
+              font="/fonts/Inter_Bold.json"
+              size={0.3}
+              height={0.05}
+              curveSegments={12}
+            >
+              COIN
+              <meshStandardMaterial 
+                color="#ffffff"
+                metalness={0.7}
+                roughness={0.2}
+              />
+            </Text3D>
+          </Center>
+        </group>
+        
+        {/* Central "P" on front of coin */}
+        <Center position={[0, 0, 0.15]}>
           <Text3D
             font="/fonts/Inter_Bold.json"
             size={1.2}
             height={0.1}
-            curveSegments={12}
+            curveSegments={24}
+            bevelEnabled
+            bevelThickness={0.02}
+            bevelSize={0.02}
+            bevelSegments={3}
           >
             P
             <meshStandardMaterial 
               color="#ffffff"
-              metalness={0.5}
-              roughness={0.3}
+              metalness={0.9}
+              roughness={0.1}
               emissive="#ffffff"
-              emissiveIntensity={0.2}
+              emissiveIntensity={0.3}
+            />
+          </Text3D>
+        </Center>
+        
+        {/* Back side of coin design with symbol */}
+        <Center position={[0, 0, -0.15]}>
+          <Text3D
+            font="/fonts/Inter_Bold.json"
+            size={0.8}
+            height={0.1}
+            curveSegments={12}
+          >
+            2025
+            <meshStandardMaterial 
+              color="#ffffff"
+              metalness={0.8}
+              roughness={0.2}
             />
           </Text3D>
         </Center>

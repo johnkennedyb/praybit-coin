@@ -18,10 +18,24 @@ const CoinTapper = ({ onTap, coins, coinsPerTap }: CoinTapperProps) => {
     setTimeout(() => setIsAnimating(false), 300);
   };
   
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(2) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(2) + 'K';
+    }
+    return num;
+  };
+  
   return (
     <div className="flex flex-col items-center gap-6 py-8">
-      <div className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent">
-        {coins} <span className="text-base text-yellow-200">P</span>
+      <div className="flex flex-col items-center">
+        <div className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent">
+          {formatNumber(coins)} <span className="text-base text-yellow-200">PRAY</span>
+        </div>
+        <div className="text-sm text-blue-300 mt-1">
+          Praybit Coin • PRAY
+        </div>
       </div>
       
       <Button 
@@ -32,9 +46,14 @@ const CoinTapper = ({ onTap, coins, coinsPerTap }: CoinTapperProps) => {
         <Coins className="h-16 w-16 text-white drop-shadow-md" />
       </Button>
       
-      <p className="text-center text-blue-200">
-        Tap to earn <span className="font-bold text-yellow-400">{coinsPerTap}</span> P coins
-      </p>
+      <div className="flex flex-col items-center">
+        <p className="text-center text-blue-200">
+          Mine <span className="font-bold text-yellow-400">{coinsPerTap} PRAY</span> tokens
+        </p>
+        <p className="text-xs text-blue-300 mt-1">
+          Ready for exchange listing
+        </p>
+      </div>
     </div>
   );
 };
