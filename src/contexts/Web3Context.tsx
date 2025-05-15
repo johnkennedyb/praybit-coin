@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { BrowserProvider, JsonRpcSigner, formatEther, ethers, Contract } from 'ethers';
+import { BrowserProvider, JsonRpcSigner, formatEther, Contract } from 'ethers';
 import { MetaMaskSDK } from '@metamask/sdk';
 import { PRAYBIT_TOKEN_ABI, PRAYBIT_TOKEN_ADDRESS } from '@/lib/contracts/PraybitToken';
 import { toast } from '@/hooks/use-toast';
@@ -86,12 +86,15 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
       const newProvider = new BrowserProvider(ethereum);
       const newSigner = await newProvider.getSigner();
       const newAddress = await newSigner.getAddress();
-      const chainIdHex = await ethereum.request({ method: 'eth_chainId' });
+      
+      // Fix TypeScript error: Ensure chainId is a string
+      const chainIdValue = await ethereum.request({ method: 'eth_chainId' });
+      const chainIdString = typeof chainIdValue === 'string' ? chainIdValue : String(chainIdValue);
       
       setProvider(newProvider);
       setSigner(newSigner);
       setAccount(newAddress);
-      setChainId(chainIdHex);
+      setChainId(chainIdString);
       
       // Fetch balances
       await fetchBalances(newAddress, newSigner);
@@ -147,7 +150,9 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
   };
 
   const handleChainChanged = (chainIdHex: string) => {
-    setChainId(chainIdHex);
+    // Ensure chainId is a string before setting state
+    const chainIdString = typeof chainIdHex === 'string' ? chainIdHex : String(chainIdHex);
+    setChainId(chainIdString);
     window.location.reload();
   };
 
