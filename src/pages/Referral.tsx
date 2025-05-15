@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import AppLayout from "@/components/AppLayout";
 import { usePrayData } from "@/hooks/use-pray-data";
-import { ShareNetwork, Copy, Check, Twitter, Facebook, Mail, Link as LinkIcon } from "lucide-react";
+import { ChartNetwork, Copy, Check, Twitter, Facebook, Mail, Link as LinkIcon, UserPlus, Coins } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const Referral = () => {
@@ -37,7 +37,7 @@ const Referral = () => {
     toast({
       title: "Referral simulated!",
       description: "You've earned 10 PRAY coins as a reward.",
-      variant: "success",
+      variant: "default",
     });
   };
   
@@ -65,7 +65,7 @@ const Referral = () => {
         <Card className="bg-blue-800/50 border-blue-700/60 backdrop-blur-md shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ShareNetwork className="h-5 w-5 text-yellow-400" />
+              <ChartNetwork className="h-5 w-5 text-yellow-400" />
               Referral Program
             </CardTitle>
             <CardDescription className="text-blue-200">
@@ -129,7 +129,7 @@ const Referral = () => {
             
             <div className="flex items-start gap-3">
               <div className="bg-indigo-900/70 p-2 rounded-full">
-                <Users className="h-5 w-5 text-yellow-400" />
+                <UserPlus className="h-5 w-5 text-yellow-400" />
               </div>
               <div>
                 <h3 className="font-medium">Friends Join</h3>
@@ -149,7 +149,7 @@ const Referral = () => {
             
             <div className="mt-4 pt-4 border-t border-indigo-700/60">
               <Button onClick={simulateReferral} className="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-indigo-900 font-medium">
-                <ShareNetwork className="mr-2 h-4 w-4" />
+                <ChartNetwork className="mr-2 h-4 w-4" />
                 Simulate a Referral
               </Button>
               <p className="text-xs text-center mt-2 text-blue-300">

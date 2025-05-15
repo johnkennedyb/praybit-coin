@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from "react-router-dom";
-import { Coins, Home, User, ShareNetwork, Share2 } from "lucide-react";
+import { Coins, Home, User, ChartNetwork, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const BottomNavigation = () => {
@@ -11,7 +11,7 @@ const BottomNavigation = () => {
   const navItems = [
     { path: "/", label: "Home", icon: <Home /> },
     { path: "/earn", label: "Earn", icon: <Coins /> },
-    { path: "/referral", label: "Referral", icon: <ShareNetwork /> },
+    { path: "/referral", label: "Referral", icon: <ChartNetwork /> },
     { path: "/social", label: "Social", icon: <Share2 /> },
     { path: "/profile", label: "Profile", icon: <User /> },
   ];

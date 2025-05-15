@@ -2,7 +2,7 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Coins, Rocket, ChevronRight, ShareNetwork, Zap, Users } from "lucide-react";
+import { Coins, Rocket, ChevronRight, ChartNetwork, Zap, Users } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import CoinScene from "@/components/CoinScene";
 
@@ -23,7 +23,7 @@ const Index = () => {
     {
       title: "Referrals",
       description: "Invite friends and earn rewards for each referral",
-      icon: <ShareNetwork className="h-8 w-8 text-blue-400" />,
+      icon: <ChartNetwork className="h-8 w-8 text-blue-400" />,
       link: "/referral"
     },
     {

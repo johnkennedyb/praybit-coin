@@ -1,8 +1,7 @@
-
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Share2, Twitter, Facebook, Instagram, Youtube, Discord, Twitch, Github, ExternalLink } from "lucide-react";
+import { Share2, Twitter, Facebook, Instagram, Youtube, Github, Twitch, ExternalLink } from "lucide-react";
 import CoinScene from "@/components/CoinScene";
 
 const Social = () => {
@@ -18,7 +17,7 @@ const Social = () => {
     {
       name: "Discord",
       username: "Praybit Community",
-      icon: <Discord className="h-8 w-8 text-[#5865F2]" />,
+      icon: <Share2 className="h-8 w-8 text-[#5865F2]" />,
       followers: "0",
       url: "https://discord.com",
       color: "bg-[#5865F2]/10 border-[#5865F2]/20"
