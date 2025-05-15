@@ -1,7 +1,7 @@
 
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Float } from '@react-three/drei';
+import { Float, Text3D, Center } from '@react-three/drei';
 import { Mesh } from 'three';
 
 export default function Coin3D({ 
@@ -30,19 +30,40 @@ export default function Coin3D({
     }
   });
 
-  // Custom coin geometry (simplified for performance)
   return (
     <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.5}>
-      <mesh ref={mesh} onClick={onClick} castShadow receiveShadow>
-        <cylinderGeometry args={[2, 2, 0.2, 32]} />
-        <meshStandardMaterial 
-          color="#ffc107"
-          metalness={0.8}
-          roughness={0.2}
-          emissive="#ff8f00"
-          emissiveIntensity={0.2}
-        />
-      </mesh>
+      <group ref={mesh} onClick={onClick}>
+        {/* Coin base */}
+        <mesh castShadow receiveShadow>
+          <cylinderGeometry args={[2, 2, 0.2, 32]} />
+          <meshStandardMaterial 
+            color="#ffc107"
+            metalness={0.8}
+            roughness={0.2}
+            emissive="#ff8f00"
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+        
+        {/* Letter P on the coin */}
+        <Center position={[0, 0.15, 0]}>
+          <Text3D
+            font="/fonts/Inter_Bold.json"
+            size={1.2}
+            height={0.1}
+            curveSegments={12}
+          >
+            P
+            <meshStandardMaterial 
+              color="#ffffff"
+              metalness={0.5}
+              roughness={0.3}
+              emissive="#ffffff"
+              emissiveIntensity={0.2}
+            />
+          </Text3D>
+        </Center>
+      </group>
     </Float>
   );
 }

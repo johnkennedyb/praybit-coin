@@ -12,7 +12,11 @@ interface CoinSceneProps {
 export default function CoinScene({ isAnimating = false, onTap = () => {} }: CoinSceneProps) {
   return (
     <div className="h-64 w-full">
-      <Canvas camera={{ position: [0, 0, 5], fov: 50 }} className="cursor-pointer">
+      <Canvas
+        camera={{ position: [0, 0, 5], fov: 50 }}
+        className="cursor-pointer"
+        shadows
+      >
         <Suspense fallback={null}>
           <PresentationControls
             global

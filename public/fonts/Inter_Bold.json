@@ -1,0 +1,41 @@
+
+{
+  "glyphs": {
+    "P": {
+      "ha": 667,
+      "x_min": 76,
+      "x_max": 624,
+      "o": "m 76 0 l 76 710 l 344 710 q 453 704 503 710 q 553 683 515 698 q 624 632 596 665 q 624 546 624 585 q 590 465 624 497 q 507 423 556 433 q 566 398 539 413 q 602 364 592 383 q 613 319 613 345 q 613 247 613 278 q 578 176 613 204 q 480 131 541 145 q 349 119 439 122 l 349 119 l 190 119 l 190 297 l 311 297 q 416 303 377 297 q 458 322 441 307 q 476 366 476 337 q 476 414 476 396 q 450 443 476 431 q 338 460 409 460 l 338 460 l 190 460 l 190 591 l 305 591 q 429 600 385 591 q 471 624 458 607 q 484 672 484 642 q 484 715 484 699 q 453 743 484 733 q 347 758 405 758 l 347 758 l 190 758 l 190 0 l 76 0 z "
+    }
+  },
+  "familyName": "Inter",
+  "ascender": 969,
+  "descender": -241,
+  "underlinePosition": -105,
+  "underlineThickness": 58,
+  "boundingBox": {
+    "yMin": -292,
+    "xMin": -680,
+    "yMax": 1087,
+    "xMax": 1709
+  },
+  "resolution": 1000,
+  "original_font_information": {
+    "format": "opentype",
+    "copyright": "Copyright 2020 The Inter Project Authors",
+    "fontFamily": "Inter",
+    "fontSubfamily": "Bold",
+    "uniqueID": "3.19;Inter",
+    "fullName": "Inter Bold",
+    "version": "3.19",
+    "postScriptName": "Inter-Bold",
+    "manufacturer": "rsms",
+    "designer": "Rasmus Andersson",
+    "manufacturerURL": "https://rsms.me/",
+    "designerURL": "https://rsms.me/",
+    "licence": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL",
+    "licenceURL": "http://scripts.sil.org/OFL"
+  },
+  "cssFontWeight": "bold",
+  "cssFontStyle": "normal"
+}

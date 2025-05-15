@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { BrowserProvider, JsonRpcSigner, formatEther, Contract, parseEther } from 'ethers';
 import { MetaMaskSDK } from '@metamask/sdk';
@@ -16,6 +15,7 @@ interface Web3ContextType {
   disconnectWallet: () => void;
   isConnecting: boolean;
   transferPray: (to: string, amount: string) => Promise<boolean>;
+  networkName: string;
 }
 
 const defaultContext: Web3ContextType = {
@@ -29,6 +29,7 @@ const defaultContext: Web3ContextType = {
   disconnectWallet: () => {},
   isConnecting: false,
   transferPray: async () => false,
+  networkName: 'Unknown Network'
 };
 
 const Web3Context = createContext<Web3ContextType>(defaultContext);
@@ -39,6 +40,22 @@ interface Web3ProviderProps {
   children: ReactNode;
 }
 
+// Helper function to get network name from chainId
+const getNetworkName = (chainId: string): string => {
+  const networks: Record<string, string> = {
+    '0x1': 'Ethereum Mainnet',
+    '0x3': 'Ropsten',
+    '0x4': 'Rinkeby',
+    '0x5': 'Goerli',
+    '0xaa36a7': 'Sepolia',
+    '0x38': 'BNB Smart Chain',
+    '0x89': 'Polygon',
+    '0xa86a': 'Avalanche'
+  };
+  
+  return networks[chainId] || `Chain ID: ${chainId}`;
+};
+
 export const Web3Provider = ({ children }: Web3ProviderProps) => {
   const [account, setAccount] = useState<string | null>(null);
   const [chainId, setChainId] = useState<string | null>(null);
@@ -47,6 +64,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
   const [praybitBalance, setPraybitBalance] = useState('0');
   const [ethBalance, setEthBalance] = useState('0');
   const [isConnecting, setIsConnecting] = useState(false);
+  const [networkName, setNetworkName] = useState('Unknown Network');
   const [mmSDK] = useState(new MetaMaskSDK());
 
   const fetchBalances = async (address: string, currentSigner: JsonRpcSigner) => {
@@ -61,8 +79,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
       setPraybitBalance(formatEther(tokenBalance));
     } catch (error) {
       console.error("Error fetching balances:", error);
-      // Use mock data for now since contract might not be deployed
-      setPraybitBalance('285');
+      setPraybitBalance('0'); // No dummy data, default to zero
     }
   };
 
@@ -95,6 +112,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
       setSigner(newSigner);
       setAccount(newAddress);
       setChainId(chainIdString);
+      setNetworkName(getNetworkName(chainIdString));
       
       // Fetch balances
       await fetchBalances(newAddress, newSigner);
@@ -126,6 +144,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
     setProvider(null);
     setPraybitBalance('0');
     setEthBalance('0');
+    setNetworkName('Unknown Network');
     
     if (window.ethereum) {
       window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
@@ -153,6 +172,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
     // Ensure chainId is a string before setting state
     const chainIdString = typeof chainIdHex === 'string' ? chainIdHex : String(chainIdHex);
     setChainId(chainIdString);
+    setNetworkName(getNetworkName(chainIdString));
     window.location.reload();
   };
 
@@ -173,7 +193,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
       // Show pending toast
       toast({
         title: "Transfer Initiated",
-        description: `Sending ${amount} PRAY to ${to.substring(0, 6)}...`,
+        description: `Sending ${amount} P to ${to.substring(0, 6)}...`,
       });
       
       const tx = await contract.transfer(to, parsedAmount);
@@ -184,7 +204,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
       
       toast({
         title: "Transfer Successful",
-        description: `Successfully sent ${amount} PRAY to ${to.substring(0, 6)}...`,
+        description: `Successfully sent ${amount} P to ${to.substring(0, 6)}...`,
       });
       
       return true;
@@ -217,6 +237,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
             setSigner(newSigner);
             setAccount(accounts[0]);
             setChainId(chainIdHex);
+            setNetworkName(getNetworkName(chainIdHex));
             
             // Fetch balances
             await fetchBalances(accounts[0], newSigner);
@@ -245,6 +266,7 @@ export const Web3Provider = ({ children }: Web3ProviderProps) => {
     disconnectWallet,
     isConnecting,
     transferPray,
+    networkName
   };
 
   return (
