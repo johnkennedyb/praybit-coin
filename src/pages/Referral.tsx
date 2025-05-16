@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import AppLayout from "@/components/AppLayout";
 import { usePrayData } from "@/hooks/use-pray-data";
 import { ChartNetwork, Copy, Check, Twitter, Facebook, Mail, Link as LinkIcon, UserPlus, Coins } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
 
 const Referral = () => {
   const { data, incrementReferrals } = usePrayData();
@@ -66,55 +66,28 @@ const Referral = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ChartNetwork className="h-5 w-5 text-yellow-400" />
-              Referral Program
+              Referral Program (Coming Soon)
             </CardTitle>
             <CardDescription className="text-blue-200">
-              Invite friends to earn PRAY coins. Get 10 PRAY for each successful referral!
+              This feature will be available once you sign up and connect your account.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-4 bg-indigo-900/40 rounded-lg border border-indigo-700/60 text-center">
-              <div className="text-3xl font-bold text-yellow-400">{data.referrals}</div>
-              <div className="text-sm text-blue-200">Total Referrals</div>
-              <div className="text-xs text-blue-300 mt-1">
-                You've earned {data.referrals * 10} PRAY coins from referrals
-              </div>
-            </div>
-            
-            <div className="relative">
-              <div className="flex space-x-2">
-                <Input 
-                  value={referralLink}
-                  readOnly
-                  className="bg-indigo-900/40 border-indigo-700/60 text-blue-100"
-                />
-                <Button onClick={copyToClipboard} variant="outline" className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/20">
-                  {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-                  {copied ? "Copied" : "Copy"}
-                </Button>
-              </div>
-            </div>
-            
-            <div className="flex justify-center space-x-3 pt-2">
-              {shareOptions.map((option) => (
-                <Button 
-                  key={option.name}
-                  onClick={option.action}
-                  variant="outline" 
-                  size="sm"
-                  className="border-indigo-600 bg-indigo-800/40 hover:bg-indigo-700/60"
-                >
-                  {option.icon}
-                  <span className="ml-2">{option.name}</span>
-                </Button>
-              ))}
+            <div className="p-5 border border-dashed border-blue-500/50 rounded-md text-center bg-blue-900/30">
+              <h3 className="font-medium text-lg mb-2">Referral Program Coming Soon</h3>
+              <p className="text-blue-200 text-sm mb-3">
+                Our referral system will be activated soon. Sign up to be notified when it's ready.
+              </p>
+              <Button asChild className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-indigo-900 font-medium">
+                <Link to="/profile">Sign Up Now</Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
         
         <Card className="bg-blue-800/50 border-blue-700/60 backdrop-blur-md shadow-xl">
           <CardHeader>
-            <CardTitle className="text-lg">How it works</CardTitle>
+            <CardTitle className="text-lg">How it will work</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-start gap-3">
@@ -123,7 +96,7 @@ const Referral = () => {
               </div>
               <div>
                 <h3 className="font-medium">Share Your Link</h3>
-                <p className="text-sm text-blue-200">Copy your unique referral link and share it with friends</p>
+                <p className="text-sm text-blue-200">You'll get a unique referral link to share with friends</p>
               </div>
             </div>
             
@@ -133,7 +106,7 @@ const Referral = () => {
               </div>
               <div>
                 <h3 className="font-medium">Friends Join</h3>
-                <p className="text-sm text-blue-200">When friends click your link and join Praybit</p>
+                <p className="text-sm text-blue-200">When friends sign up using your link</p>
               </div>
             </div>
             
@@ -143,18 +116,8 @@ const Referral = () => {
               </div>
               <div>
                 <h3 className="font-medium">Earn Rewards</h3>
-                <p className="text-sm text-blue-200">You earn 10 PRAY coins for each successful referral</p>
+                <p className="text-sm text-blue-200">You'll earn PRAY coins for each successful referral</p>
               </div>
-            </div>
-            
-            <div className="mt-4 pt-4 border-t border-indigo-700/60">
-              <Button onClick={simulateReferral} className="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-indigo-900 font-medium">
-                <ChartNetwork className="mr-2 h-4 w-4" />
-                Simulate a Referral
-              </Button>
-              <p className="text-xs text-center mt-2 text-blue-300">
-                For testing purposes: Click to simulate a friend using your referral link
-              </p>
             </div>
           </CardContent>
         </Card>

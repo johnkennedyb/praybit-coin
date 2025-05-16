@@ -8,9 +8,9 @@ import CoinScene from "@/components/CoinScene";
 
 const Index = () => {
   const stats = [
-    { label: "Total Users", value: "0", icon: <Users className="h-5 w-5 text-blue-400" /> },
+    { label: "Total Users", value: "Coming Soon", icon: <Users className="h-5 w-5 text-blue-400" /> },
     { label: "Market Cap", value: "Coming Soon", icon: <Coins className="h-5 w-5 text-yellow-400" /> },
-    { label: "Holders", value: "0", icon: <Users className="h-5 w-5 text-green-400" /> },
+    { label: "Holders", value: "Coming Soon", icon: <Users className="h-5 w-5 text-green-400" /> },
   ];
   
   const features = [
@@ -22,7 +22,7 @@ const Index = () => {
     },
     {
       title: "Referrals",
-      description: "Invite friends and earn rewards for each referral",
+      description: "Invite friends and earn rewards for each referral (Coming Soon)",
       icon: <ChartNetwork className="h-8 w-8 text-blue-400" />,
       link: "/referral"
     },
@@ -37,9 +37,9 @@ const Index = () => {
   return (
     <AppLayout showHeader={false}>
       <div className="flex flex-col justify-between min-h-[calc(100vh-4rem)]">
-        {/* Hero Section */}
-        <div className="py-4 text-center">
-          <div className="mx-auto max-w-md">
+        {/* Hero Section with better coin placement */}
+        <div className="py-8 text-center">
+          <div className="mx-auto w-64 h-64 mb-6">
             <CoinScene size="large" />
           </div>
           
@@ -51,7 +51,7 @@ const Index = () => {
             The community-driven meme coin with real utility. Earn, trade, and transact with PRAY.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-6">
             <Button asChild className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-indigo-900 font-medium">
               <Link to="/earn">
                 <Zap className="mr-2 h-4 w-4" />
@@ -59,7 +59,7 @@ const Index = () => {
               </Link>
             </Button>
             <Button asChild variant="outline" className="border-indigo-500 hover:bg-indigo-700">
-              <Link to="/about">Learn More</Link>
+              <Link to="/profile">Sign Up</Link>
             </Button>
           </div>
         </div>
@@ -108,7 +108,7 @@ const Index = () => {
           <CardContent className="p-5 text-center">
             <h3 className="font-bold text-xl mb-2 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">Join the Community</h3>
             <p className="text-sm text-blue-100 mb-4">
-              Be part of the PRAY ecosystem and help shape its future.
+              Sign up now and be part of the PRAY ecosystem.
             </p>
             <Button asChild variant="outline" className="border-white/40 bg-white/10 hover:bg-white/20">
               <Link to="/profile">

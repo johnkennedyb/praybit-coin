@@ -1,8 +1,9 @@
 
 import { Button } from "@/components/ui/button";
-import { Wallet, LogOut, Loader2, Network } from "lucide-react";
+import { Wallet, LogOut, Loader2, Network, AlertCircle } from "lucide-react";
 import { useWeb3 } from "@/contexts/Web3Context";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { toast } from "@/hooks/use-toast";
 
 interface ConnectWalletButtonProps {
   variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive";
@@ -18,6 +19,23 @@ export default function ConnectWalletButton({
   showNetwork = true
 }: ConnectWalletButtonProps) {
   const { account, connectWallet, disconnectWallet, isConnecting, networkName } = useWeb3();
+  
+  // Function to handle connection with verification check
+  const handleConnectWallet = () => {
+    // In a real app, this would check if the user is verified in Supabase
+    const isUserVerified = false; // This would be a check against Supabase
+    
+    if (!isUserVerified) {
+      toast({
+        title: "Verification Required",
+        description: "You must sign up and verify your account before connecting your wallet.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    connectWallet();
+  };
   
   if (account) {
     // Wallet is connected - show address and disconnect button
@@ -56,7 +74,7 @@ export default function ConnectWalletButton({
     <Button
       variant={variant}
       size={size}
-      onClick={connectWallet}
+      onClick={handleConnectWallet}
       disabled={isConnecting}
       className={`${className} bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700`}
     >

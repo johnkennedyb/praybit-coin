@@ -16,7 +16,8 @@ import {
   Key,
   ChevronRight,
   Settings,
-  Send
+  Send,
+  AlertTriangle
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useWeb3 } from "@/contexts/Web3Context";
@@ -53,37 +54,20 @@ const Profile = () => {
   
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would authenticate with your backend
-    if (email && password) {
-      setIsLoggedIn(true);
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully logged in.",
-      });
-    }
+    toast({
+      title: "Supabase connection required",
+      description: "Please connect your project to Supabase to enable authentication.",
+      variant: "destructive"
+    });
   };
   
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would register with your backend
-    const { name, email, password, confirmPassword } = registerForm;
-    
-    if (password !== confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (name && email && password) {
-      setIsLoggedIn(true);
-      toast({
-        title: "Account created!",
-        description: "Your account has been successfully created.",
-      });
-    }
+    toast({
+      title: "Supabase connection required",
+      description: "Please connect your project to Supabase to enable user registration.",
+      variant: "destructive"
+    });
   };
   
   const toggleForm = () => {
@@ -111,7 +95,7 @@ const Profile = () => {
         {!isLoggedIn ? (
           <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
             <CardHeader>
-              <CardTitle className="text-xl">
+              <CardTitle className="text-xl flex items-center gap-2">
                 {showLoginForm ? "Login to Your Account" : "Create an Account"}
               </CardTitle>
               <CardDescription>
@@ -122,6 +106,14 @@ const Profile = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="bg-blue-900/40 border border-blue-600/30 p-4 rounded-md mb-5 flex items-center gap-3">
+                <AlertTriangle className="h-5 w-5 text-yellow-400 flex-shrink-0" />
+                <div className="text-sm text-blue-100">
+                  <p className="font-medium mb-1">Supabase Connection Required</p>
+                  <p>To enable authentication and user accounts, please connect this project to Supabase using the green Supabase button in the top-right corner of the Lovable interface.</p>
+                </div>
+              </div>
+              
               {showLoginForm ? (
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
