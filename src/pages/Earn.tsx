@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { CircleDollarSign, Zap, Award, Users, Trophy, CalendarDays, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import ConnectWalletButton from "@/components/ConnectWalletButton";
 import Stats from "@/components/Stats";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabase } from "@/contexts/SupabaseContext";
+import { usePrayData } from "@/hooks/use-pray-data";
 
 const Earn = () => {
   const { account } = useWeb3();
@@ -20,6 +22,7 @@ const Earn = () => {
   const [isEligible, setIsEligible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const { data, incrementTaps } = usePrayData();
 
   useEffect(() => {
     const checkEligibility = async () => {
@@ -80,6 +83,14 @@ const Earn = () => {
       });
   };
 
+  const handleTap = () => {
+    incrementTaps();
+    toast({
+      title: "PRAY Mined!",
+      description: `You earned ${data.miningPower} PRAY tokens`,
+    });
+  };
+
   return (
     <AppLayout title="Earn">
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -93,7 +104,11 @@ const Earn = () => {
             <CardDescription>Tap to earn PRAY tokens</CardDescription>
           </CardHeader>
           <CardContent>
-            <CoinTapper />
+            <CoinTapper 
+              onTap={handleTap} 
+              coins={data.coins} 
+              coinsPerTap={data.miningPower || 1} 
+            />
           </CardContent>
           <CardFooter>
             <ConnectWalletButton variant="outline" />
@@ -225,7 +240,11 @@ const Earn = () => {
         </Card>
       </div>
 
-      <Stats />
+      <Stats 
+        coins={data.coins} 
+        tapsCount={data.tapsCount} 
+        referrals={data.referrals} 
+      />
     </AppLayout>
   );
 };
