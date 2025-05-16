@@ -1,9 +1,10 @@
+
 import { Button } from "@/components/ui/button";
 import { Wallet, LogOut, Loader2, Network, AlertCircle } from "lucide-react";
 import { useWeb3 } from "@/contexts/Web3Context";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { useSupabase } from "@/contexts/SupabaseContext";
 

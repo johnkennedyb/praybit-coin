@@ -1,192 +1,113 @@
-
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Coins, Rocket, ChevronRight, ChartNetwork, Zap, Users } from "lucide-react";
-import AppLayout from "@/components/AppLayout";
-import { supabase } from "@/lib/supabase";
+import { ArrowRightIcon, TrendingUp, Zap, Shield, Users } from "lucide-react";
+import { useWeb3 } from "@/contexts/Web3Context";
+import CoinTapper from "@/components/CoinTapper";
+import CoinScene from "@/components/CoinScene";
+import ConnectWalletButton from "@/components/ConnectWalletButton";
+import { supabase } from "@/integrations/supabase/client";
 import { useSupabase } from "@/contexts/SupabaseContext";
-import Coin3D from "@/components/Coin3D";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { account, chainId } = useWeb3();
   const { user } = useSupabase();
-  const [totalUsers, setTotalUsers] = useState<number | null>(null);
-  const [totalHolders, setTotalHolders] = useState<number | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
-  
-  useEffect(() => {
-    // Count total users from auth.users
-    const fetchUserCount = async () => {
-      try {
-        const { count, error } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
-          
-        if (error) throw error;
-        
-        setTotalUsers(count || 0);
-      } catch (error) {
-        console.error("Error fetching user count:", error);
-        setTotalUsers(0);
-      }
-    };
-    
-    // Count holders (users with wallet connected)
-    const fetchHolderCount = async () => {
-      try {
-        const { count, error } = await supabase
-          .from('wallet_connections')
-          .select('*', { count: 'exact', head: true });
-          
-        if (error) throw error;
-        
-        setTotalHolders(count || 0);
-      } catch (error) {
-        console.error("Error fetching holder count:", error);
-        setTotalHolders(0);
-      }
-    };
-    
-    if (user) {
-      fetchUserCount();
-      fetchHolderCount();
-    } else {
-      // Placeholder values for non-authenticated users
-      setTotalUsers(0);
-      setTotalHolders(0);
-    }
-  }, [user]);
-  
-  const handleCoinClick = () => {
-    setIsAnimating(true);
-    setTimeout(() => setIsAnimating(false), 300);
-  };
-  
-  const stats = [
-    { 
-      label: "Total Users", 
-      value: totalUsers !== null ? totalUsers.toString() : "Loading...", 
-      icon: <Users className="h-5 w-5 text-blue-400" /> 
-    },
-    { 
-      label: "Market Cap", 
-      value: "Coming Soon", 
-      icon: <Coins className="h-5 w-5 text-yellow-400" /> 
-    },
-    { 
-      label: "Holders", 
-      value: totalHolders !== null ? totalHolders.toString() : "Loading...", 
-      icon: <Users className="h-5 w-5 text-green-400" /> 
-    },
-  ];
-  
-  const features = [
-    {
-      title: "Earn PRAY",
-      description: "Tap to earn PRAY coins and complete tasks for rewards",
-      icon: <Zap className="h-8 w-8 text-yellow-400" />,
-      link: "/earn"
-    },
-    {
-      title: "Referrals",
-      description: "Invite friends and earn rewards for each referral (Coming Soon)",
-      icon: <ChartNetwork className="h-8 w-8 text-blue-400" />,
-      link: "/referral"
-    },
-    {
-      title: "Social Media",
-      description: "Connect with the PRAY community on social media",
-      icon: <Rocket className="h-8 w-8 text-purple-400" />,
-      link: "/social"
-    }
-  ];
 
   return (
-    <AppLayout showHeader={false}>
-      <div className="flex flex-col justify-between min-h-[calc(100vh-4rem)]">
-        {/* Hero Section with better coin placement */}
-        <div className="py-8 text-center">
-          <div className="mx-auto w-64 h-64 mb-6 flex items-center justify-center">
-            <Coin3D isAnimating={isAnimating} onClick={handleCoinClick} />
-          </div>
-          
-          <h1 className="text-4xl font-bold tracking-tighter bg-gradient-to-br from-yellow-200 to-yellow-400 bg-clip-text text-transparent">
-            Praybit Coin
-          </h1>
-          
-          <p className="text-blue-200 max-w-md mx-auto mt-2">
-            The community-driven meme coin with real utility. Earn, trade, and transact with PRAY.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-6">
-            <Button asChild className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-indigo-900 font-medium">
-              <Link to="/earn">
-                <Zap className="mr-2 h-4 w-4" />
-                Start Earning
-              </Link>
-            </Button>
-            <Button asChild variant="outline" className="border-indigo-500 hover:bg-indigo-700">
-              <Link to="/profile">Sign Up</Link>
-            </Button>
+    <div className="relative flex min-h-screen flex-col">
+      <CoinScene />
+      <header className="px-6 pt-6 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+          <div className="sm:flex sm:justify-between sm:gap-4">
+            <div className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+              Praybit
+            </div>
+            <div className="mt-4 flex justify-end gap-4 sm:mt-0">
+              {user ? (
+                <ConnectWalletButton showNetwork={false} />
+              ) : (
+                <Button onClick={() => navigate("/profile")}>
+                  Get Started <ArrowRightIcon className="ml-2 h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-        
-        {/* Stats Section */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          {stats.map((stat, i) => (
-            <Card key={i} className="bg-indigo-800/40 border-indigo-700/60 backdrop-blur-md shadow-xl">
-              <CardContent className="p-3 text-center">
-                <div className="flex justify-center mb-1">
-                  {stat.icon}
-                </div>
-                <div className="font-bold text-lg">{stat.value}</div>
-                <div className="text-xs text-blue-300">{stat.label}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        
-        {/* Features Section */}
-        <div className="space-y-4 mb-6">
-          {features.map((feature, i) => (
-            <Link key={i} to={feature.link}>
-              <Card className="bg-indigo-800/40 border-indigo-700/60 backdrop-blur-md shadow-xl hover:bg-indigo-700/50 transition-colors">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-indigo-900/70 p-2 rounded-lg">
-                        {feature.icon}
-                      </div>
-                      <div>
-                        <h3 className="font-medium">{feature.title}</h3>
-                        <p className="text-xs text-blue-200">{feature.description}</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-blue-300" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-        
-        {/* CTA Section */}
-        <Card className="bg-gradient-to-r from-indigo-900 to-purple-900 border-indigo-700/60 shadow-xl mb-8">
-          <CardContent className="p-5 text-center">
-            <h3 className="font-bold text-xl mb-2 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">Join the Community</h3>
-            <p className="text-sm text-blue-100 mb-4">
-              Sign up now and be part of the PRAY ecosystem.
+      </header>
+      <main className="relative mt-16 flex-grow px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
+              Tap to earn PRAY tokens
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-blue-100">
+              Join the Praybit ecosystem and start earning PRAY tokens by
+              tapping the coin. The more you tap, the more you earn!
             </p>
-            <Button asChild variant="outline" className="border-white/40 bg-white/10 hover:bg-white/20">
-              <Link to="/profile">
-                Create Account
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </AppLayout>
+            <div className="mt-10 flex items-center justify-center gap-x-6">
+              {account ? (
+                <CoinTapper />
+              ) : (
+                <div className="text-center">
+                  <p className="text-sm text-blue-200 mb-3">
+                    Connect your wallet to start earning!
+                  </p>
+                  <ConnectWalletButton />
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="mt-16 border-t border-blue-900/50 pt-8 text-center">
+            <h2 className="text-2xl font-semibold text-white">
+              Why Choose Praybit?
+            </h2>
+            <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <TrendingUp className="mx-auto h-10 w-10 text-yellow-400" />
+                <h3 className="mt-4 text-lg font-medium text-white">
+                  Rewarding Experience
+                </h3>
+                <p className="mt-2 text-sm text-blue-100">
+                  Earn PRAY tokens simply by tapping the coin. It's fun and
+                  rewarding!
+                </p>
+              </div>
+              <div>
+                <Zap className="mx-auto h-10 w-10 text-yellow-400" />
+                <h3 className="mt-4 text-lg font-medium text-white">
+                  Instant Gratification
+                </h3>
+                <p className="mt-2 text-sm text-blue-100">
+                  See your PRAY token balance grow in real-time as you tap.
+                </p>
+              </div>
+              <div>
+                <Shield className="mx-auto h-10 w-10 text-yellow-400" />
+                <h3 className="mt-4 text-lg font-medium text-white">Secure</h3>
+                <p className="mt-2 text-sm text-blue-100">
+                  Your PRAY tokens are stored securely in your connected wallet.
+                </p>
+              </div>
+              <div>
+                <Users className="mx-auto h-10 w-10 text-yellow-400" />
+                <h3 className="mt-4 text-lg font-medium text-white">
+                  Community Driven
+                </h3>
+                <p className="mt-2 text-sm text-blue-100">
+                  Join a vibrant community of PRAY token earners and
+                  enthusiasts.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer className="relative mt-16 border-t border-blue-900/50 py-8 px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl text-center text-sm text-blue-200">
+          &copy; {new Date().getFullYear()} Praybit. All rights reserved.
+        </div>
+      </footer>
+    </div>
   );
 };
 
