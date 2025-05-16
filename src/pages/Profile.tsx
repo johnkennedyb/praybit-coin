@@ -1,4 +1,6 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +19,8 @@ import {
   ChevronRight,
   Settings,
   Send,
-  AlertTriangle
+  AlertTriangle,
+  Loader2
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useWeb3 } from "@/contexts/Web3Context";
@@ -25,9 +28,11 @@ import ConnectWalletButton from "@/components/ConnectWalletButton";
 import TransferModal from "@/components/TransferModal";
 
 const Profile = () => {
-  const { account, praybitBalance, ethBalance } = useWeb3();
+  const { account, praybitBalance, ethBalance, connectWallet } = useWeb3();
   const [copied, setCopied] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const [showTransferModal, setShowTransferModal] = useState(false);
   
   // Login form state
@@ -44,6 +49,33 @@ const Profile = () => {
   
   const [showLoginForm, setShowLoginForm] = useState(true);
   
+  // Check for existing session on component mount
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        setUser(data.session.user);
+        setIsLoggedIn(true);
+      }
+    };
+    
+    checkSession();
+    
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        setUser(session.user);
+        setIsLoggedIn(true);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setIsLoggedIn(false);
+      }
+    });
+    
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+  
   const copyWalletAddress = () => {
     if (account) {
       navigator.clipboard.writeText(account);
@@ -52,22 +84,102 @@ const Profile = () => {
     }
   };
   
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Supabase connection required",
-      description: "Please connect your project to Supabase to enable authentication.",
-      variant: "destructive"
-    });
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome back to Praybit!",
+      });
+      
+      setIsLoggedIn(true);
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Something went wrong",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
   
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Supabase connection required",
-      description: "Please connect your project to Supabase to enable user registration.",
-      variant: "destructive"
-    });
+    setIsLoading(true);
+    
+    if (registerForm.password !== registerForm.confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: registerForm.email,
+        password: registerForm.password,
+        options: {
+          data: {
+            name: registerForm.name,
+          }
+        }
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      toast({
+        title: "Registration successful",
+        description: "Please check your email to verify your account",
+      });
+      
+      // Auto switch to login form after successful registration
+      setShowLoginForm(true);
+    } catch (error: any) {
+      toast({
+        title: "Registration failed",
+        description: error.message || "Something went wrong",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast({
+        title: "Signed out",
+        description: "You have been signed out successfully",
+      });
+      
+      setIsLoggedIn(false);
+    } catch (error: any) {
+      toast({
+        title: "Sign out failed",
+        description: error.message || "Something went wrong",
+        variant: "destructive"
+      });
+    }
   };
   
   const toggleForm = () => {
@@ -105,15 +217,7 @@ const Profile = () => {
                 }
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="bg-blue-900/40 border border-blue-600/30 p-4 rounded-md mb-5 flex items-center gap-3">
-                <AlertTriangle className="h-5 w-5 text-yellow-400 flex-shrink-0" />
-                <div className="text-sm text-blue-100">
-                  <p className="font-medium mb-1">Supabase Connection Required</p>
-                  <p>To enable authentication and user accounts, please connect this project to Supabase using the green Supabase button in the top-right corner of the Lovable interface.</p>
-                </div>
-              </div>
-              
+            <CardContent>              
               {showLoginForm ? (
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
@@ -148,8 +252,19 @@ const Profile = () => {
                     </div>
                   </div>
                   
-                  <Button type="submit" className="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium">
-                    Login
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Logging in...
+                      </>
+                    ) : (
+                      "Login"
+                    )}
                   </Button>
                 </form>
               ) : (
@@ -221,8 +336,19 @@ const Profile = () => {
                     </div>
                   </div>
                   
-                  <Button type="submit" className="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium">
-                    Create Account
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating Account...
+                      </>
+                    ) : (
+                      "Create Account"
+                    )}
                   </Button>
                 </form>
               )}
@@ -340,7 +466,7 @@ const Profile = () => {
                 <Button 
                   variant="destructive" 
                   className="w-full"
-                  onClick={() => setIsLoggedIn(false)}
+                  onClick={handleSignOut}
                 >
                   Log Out
                 </Button>

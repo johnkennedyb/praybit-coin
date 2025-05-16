@@ -1,16 +1,71 @@
 
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Coins, Rocket, ChevronRight, ChartNetwork, Zap, Users } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
-import CoinScene from "@/components/CoinScene";
+import { supabase } from "@/lib/supabase";
+import Coin3D from "@/components/Coin3D";
 
 const Index = () => {
+  const [totalUsers, setTotalUsers] = useState<number | null>(null);
+  const [totalHolders, setTotalHolders] = useState<number | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  
+  useEffect(() => {
+    // Fetch stats from Supabase
+    const fetchStats = async () => {
+      try {
+        // Count users in auth.users table
+        const { count: userCount, error: userError } = await supabase
+          .from('users')
+          .select('*', { count: 'exact', head: true });
+          
+        if (userError) throw userError;
+        
+        // Count holders (users with wallet connected)
+        const { count: holderCount, error: holderError } = await supabase
+          .from('users')
+          .select('*', { count: 'exact', head: true })
+          .not('wallet_address', 'is', null);
+          
+        if (holderError) throw holderError;
+        
+        setTotalUsers(userCount || 0);
+        setTotalHolders(holderCount || 0);
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+        // Use placeholder values if error occurs
+        setTotalUsers(0);
+        setTotalHolders(0);
+      }
+    };
+    
+    fetchStats();
+  }, []);
+  
+  const handleCoinClick = () => {
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 300);
+  };
+  
   const stats = [
-    { label: "Total Users", value: "Coming Soon", icon: <Users className="h-5 w-5 text-blue-400" /> },
-    { label: "Market Cap", value: "Coming Soon", icon: <Coins className="h-5 w-5 text-yellow-400" /> },
-    { label: "Holders", value: "Coming Soon", icon: <Users className="h-5 w-5 text-green-400" /> },
+    { 
+      label: "Total Users", 
+      value: totalUsers !== null ? totalUsers.toString() : "Loading...", 
+      icon: <Users className="h-5 w-5 text-blue-400" /> 
+    },
+    { 
+      label: "Market Cap", 
+      value: "Coming Soon", 
+      icon: <Coins className="h-5 w-5 text-yellow-400" /> 
+    },
+    { 
+      label: "Holders", 
+      value: totalHolders !== null ? totalHolders.toString() : "Loading...", 
+      icon: <Users className="h-5 w-5 text-green-400" /> 
+    },
   ];
   
   const features = [
@@ -39,8 +94,8 @@ const Index = () => {
       <div className="flex flex-col justify-between min-h-[calc(100vh-4rem)]">
         {/* Hero Section with better coin placement */}
         <div className="py-8 text-center">
-          <div className="mx-auto w-64 h-64 mb-6">
-            <CoinScene size="large" />
+          <div className="mx-auto w-64 h-64 mb-6 flex items-center justify-center">
+            <Coin3D isAnimating={isAnimating} onClick={handleCoinClick} />
           </div>
           
           <h1 className="text-4xl font-bold tracking-tighter bg-gradient-to-br from-yellow-200 to-yellow-400 bg-clip-text text-transparent">

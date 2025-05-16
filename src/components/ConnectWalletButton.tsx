@@ -4,6 +4,8 @@ import { Wallet, LogOut, Loader2, Network, AlertCircle } from "lucide-react";
 import { useWeb3 } from "@/contexts/Web3Context";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
 
 interface ConnectWalletButtonProps {
   variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive";
@@ -19,12 +21,28 @@ export default function ConnectWalletButton({
   showNetwork = true
 }: ConnectWalletButtonProps) {
   const { account, connectWallet, disconnectWallet, isConnecting, networkName } = useWeb3();
+  const [isUserVerified, setIsUserVerified] = useState(false);
+  
+  // Check if user is authenticated with Supabase
+  useEffect(() => {
+    const checkUserAuth = async () => {
+      const { data } = await supabase.auth.getSession();
+      setIsUserVerified(!!data.session);
+    };
+    
+    checkUserAuth();
+    
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      setIsUserVerified(event === 'SIGNED_IN');
+    });
+    
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
   
   // Function to handle connection with verification check
   const handleConnectWallet = () => {
-    // In a real app, this would check if the user is verified in Supabase
-    const isUserVerified = false; // This would be a check against Supabase
-    
     if (!isUserVerified) {
       toast({
         title: "Verification Required",

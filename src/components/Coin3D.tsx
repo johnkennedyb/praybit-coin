@@ -1,8 +1,5 @@
 
-import { useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
-import { Float, Text3D, Center } from '@react-three/drei';
-import { Mesh } from 'three';
+import { useState } from 'react';
 
 export default function Coin3D({ 
   isAnimating = false,
@@ -11,78 +8,23 @@ export default function Coin3D({
   isAnimating?: boolean;
   onClick?: () => void;
 }) {
-  const mesh = useRef<Mesh>(null!);
+  const [isHovered, setIsHovered] = useState(false);
   
-  // Simple rotation animation
-  useFrame((state, delta) => {
-    if (mesh.current) {
-      mesh.current.rotation.y += 0.01;
-      
-      // Animation when tapping
-      if (isAnimating) {
-        mesh.current.scale.x = Math.max(0.9, mesh.current.scale.x - 0.02);
-        mesh.current.scale.y = Math.max(0.9, mesh.current.scale.y - 0.02);
-      } else {
-        mesh.current.scale.x = Math.min(1, mesh.current.scale.x + 0.02);
-        mesh.current.scale.y = Math.min(1, mesh.current.scale.y + 0.02);
-      }
-    }
-  });
-
   return (
-    <Float speed={1.5} rotationIntensity={0.2} floatIntensity={0.5}>
-      <group ref={mesh} onClick={onClick}>
-        {/* Simplified coin base - front face */}
-        <mesh castShadow receiveShadow position={[0, 0, 0.05]}>
-          <cylinderGeometry args={[2, 2, 0.1, 32]} />
-          <meshStandardMaterial 
-            color="#ffdd3a"
-            metalness={0.7}
-            roughness={0.2}
-          />
-        </mesh>
-        
-        {/* Coin base - back face */}
-        <mesh castShadow receiveShadow position={[0, 0, -0.05]}>
-          <cylinderGeometry args={[2, 2, 0.1, 32]} />
-          <meshStandardMaterial 
-            color="#ffdd3a"
-            metalness={0.7}
-            roughness={0.2}
-          />
-        </mesh>
-        
-        {/* Simple coin edge */}
-        <mesh castShadow receiveShadow rotation={[Math.PI/2, 0, 0]}>
-          <torusGeometry args={[2, 0.15, 16, 32]} />
-          <meshStandardMaterial 
-            color="#ffe24d"
-            metalness={0.8}
-            roughness={0.2}
-          />
-        </mesh>
-        
-        {/* Simple "P" on front of coin */}
-        <Center position={[0, 0, 0.15]}>
-          <Text3D
-            font="/fonts/Inter_Bold.json"
-            size={1.2}
-            height={0.1}
-            curveSegments={16}
-            bevelEnabled
-            bevelThickness={0.03}
-            bevelSize={0.01}
-            bevelSegments={3}
-          >
-            P
-            <meshStandardMaterial 
-              color="#ffffff"
-              metalness={0.5}
-              roughness={0.5}
-            />
-          </Text3D>
-        </Center>
-      </group>
-    </Float>
+    <div 
+      className={`relative w-32 h-32 mx-auto transition-transform cursor-pointer ${isAnimating ? 'scale-95' : 'scale-100'}`}
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className={`absolute inset-0 rounded-full bg-gradient-to-r from-yellow-300 to-amber-500 shadow-lg transition-all duration-300 ${isHovered ? 'shadow-amber-400/40' : 'shadow-amber-400/20'}`}>
+        <div className="absolute inset-2 rounded-full bg-gradient-to-r from-yellow-400 to-amber-400 flex items-center justify-center border-4 border-amber-300/30">
+          <span className="text-5xl font-bold text-amber-800">P</span>
+          <div className="absolute inset-0 rounded-full border-2 border-amber-200/20"></div>
+        </div>
+        {/* Coin highlight effect */}
+        <div className="absolute top-1/4 left-1/5 w-1/3 h-1/6 bg-white/20 rounded-full blur-sm"></div>
+      </div>
+    </div>
   );
 }
