@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -84,13 +85,41 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fadeOutUp': {
+					'0%': { 
+						opacity: '1',
+						transform: 'translate(-50%, -50%) translateY(0)'
+					},
+					'100%': { 
+						opacity: '0',
+						transform: 'translate(-50%, -50%) translateY(-100px)'
+					}
+				},
+				'pulse': {
+					'0%, 100%': {
+						opacity: '1',
+						transform: 'scale(1)'
+					},
+					'50%': {
+						opacity: '0.7',
+						transform: 'scale(0.95)'
+					}
+				},
+				'rotate-y': {
+					'0%': { transform: 'rotateY(0deg)' },
+					'100%': { transform: 'rotateY(360deg)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fadeOutUp': 'fadeOutUp 1s ease-out forwards',
+				'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				'rotate-y': 'rotate-y 3s linear infinite'
 			}
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+

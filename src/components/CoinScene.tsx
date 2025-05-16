@@ -2,7 +2,7 @@
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Environment, PresentationControls, useProgress, Html } from '@react-three/drei';
-import Coin3D from './Coin3D';
+import { Sparkles } from 'lucide-react';
 
 interface CoinSceneProps {
   isAnimating?: boolean;
@@ -21,6 +21,61 @@ function Loader() {
         </div>
       </div>
     </Html>
+  );
+}
+
+// Actual 3D Coin component that will be rendered in the scene
+function Coin3D({ isAnimating, onClick }: { isAnimating?: boolean; onClick?: () => void }) {
+  return (
+    <group 
+      onClick={onClick} 
+      scale={isAnimating ? 0.95 : 1} 
+      position={[0, 0, 0]}
+      rotation={[0, 0, 0]}
+    >
+      {/* Main coin body */}
+      <mesh castShadow receiveShadow>
+        <cylinderGeometry args={[1, 1, 0.2, 64]} />
+        <meshStandardMaterial 
+          color="#F59E0B" 
+          metalness={0.8} 
+          roughness={0.3} 
+        />
+      </mesh>
+      
+      {/* Coin edge details */}
+      <mesh position={[0, 0, 0.1]}>
+        <cylinderGeometry args={[0.9, 0.9, 0.02, 64]} />
+        <meshStandardMaterial 
+          color="#FCD34D" 
+          metalness={0.7} 
+          roughness={0.2} 
+        />
+      </mesh>
+      
+      {/* Coin rim */}
+      <mesh position={[0, 0, 0]}>
+        <torusGeometry args={[1, 0.1, 16, 100]} />
+        <meshStandardMaterial 
+          color="#F59E0B" 
+          metalness={0.7} 
+          roughness={0.3} 
+        />
+      </mesh>
+      
+      {/* Text "P" in the middle */}
+      <mesh position={[0, 0, 0.11]}>
+        <torusGeometry args={[0.3, 0.1, 3, 12]} />
+        <meshStandardMaterial 
+          color="#92400E" 
+          metalness={0.2} 
+          roughness={0.8} 
+        />
+      </mesh>
+      
+      {/* Sparkle effect */}
+      <pointLight position={[0.3, 0.3, 0.5]} intensity={0.6} color="#FFFFFF" />
+    </group>
   );
 }
 
@@ -48,7 +103,7 @@ export default function CoinScene({
         <Suspense fallback={<Loader />}>
           <PresentationControls
             global
-            rotation={[0, 0, 0]}
+            rotation={[0.3, 0, 0]}
             polar={[-Math.PI / 4, Math.PI / 4]}
             azimuth={[-Math.PI / 4, Math.PI / 4]}
             config={{ mass: 2, tension: 500 }}
@@ -58,7 +113,6 @@ export default function CoinScene({
             <ambientLight intensity={0.8} />
             <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1.5} castShadow />
             <directionalLight position={[-5, 5, 5]} intensity={1.2} castShadow />
-            <pointLight position={[-10, -10, -10]} intensity={0.9} />
             <Coin3D isAnimating={isAnimating} onClick={onTap} />
           </PresentationControls>
         </Suspense>
