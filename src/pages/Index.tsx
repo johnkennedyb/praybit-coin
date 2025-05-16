@@ -8,12 +8,23 @@ import CoinScene from "@/components/CoinScene";
 import ConnectWalletButton from "@/components/ConnectWalletButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabase } from "@/contexts/SupabaseContext";
+import { usePrayData } from "@/hooks/use-pray-data";
+import { toast } from "@/hooks/use-toast";
 
 const Index = () => {
   const navigate = useNavigate();
   const { account, chainId } = useWeb3();
   const { user } = useSupabase();
+  const { data, incrementTaps } = usePrayData();
   
+  const handleTap = () => {
+    incrementTaps();
+    toast({
+      title: "PRAY Mined!",
+      description: `You earned ${data.miningPower} PRAY tokens`,
+    });
+  };
+
   return (
     <div className="relative flex min-h-screen flex-col">
       <CoinScene />
@@ -48,9 +59,9 @@ const Index = () => {
             <div className="mt-10 flex items-center justify-center gap-x-6">
               {account ? (
                 <CoinTapper 
-                  onTap={() => {}}
-                  coins={0}
-                  coinsPerTap={1}
+                  onTap={handleTap}
+                  coins={data.coins}
+                  coinsPerTap={data.miningPower || 1}
                 />
               ) : (
                 <div className="text-center">
