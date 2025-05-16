@@ -1,20 +1,12 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Define fallback values for local development
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-
-// Check if URL is missing and provide a helpful error message
-if (!supabaseUrl) {
-  console.error(
-    'Supabase URL is missing! Make sure you have connected your Lovable project to Supabase using the Supabase button in the top right corner.'
-  );
-}
+// Use the values from the integrated Supabase project
+const supabaseUrl = "https://lifwrxexniqgfbctareb.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxpZndyeGV4bmlxZ2ZiY3RhcmViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDczNTQ5MjAsImV4cCI6MjA2MjkzMDkyMH0.XWVR9cxD1WBXRlqdF7-DrX9gR4Qc_j5IFKpNtCeLVVA";
 
 // Create and export the Supabase client
 export const supabase = createClient(
   supabaseUrl,
   supabaseAnonKey
 );
-

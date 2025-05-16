@@ -8,13 +8,16 @@ import { toast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import CoinScene from "@/components/CoinScene";
 import { useWeb3 } from "@/contexts/Web3Context";
+import { useSupabase } from "@/contexts/SupabaseContext";
 import ConnectWalletButton from "@/components/ConnectWalletButton";
 import { usePrayData } from "@/hooks/use-pray-data";
+import { supabase } from "@/lib/supabase";
 
 const Earn = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const isMobile = useIsMobile();
   const { account, praybitBalance } = useWeb3();
+  const { user } = useSupabase();
   const { data, incrementTaps, claimDailyReward } = usePrayData();
   
   // Mining power increases with number of taps
@@ -25,6 +28,33 @@ const Earn = () => {
     const power = Math.floor(1 + (data.tapsCount / 100));
     setMiningPower(power);
   }, [data.tapsCount]);
+
+  // Track taps in Supabase if user is logged in
+  useEffect(() => {
+    if (user && data.tapsCount > 0) {
+      const syncTaps = async () => {
+        try {
+          const { error } = await supabase
+            .from('user_stats')
+            .upsert(
+              { 
+                user_id: user.id, 
+                taps_count: data.tapsCount,
+                coins: data.coins,
+                mining_power: miningPower
+              },
+              { onConflict: 'user_id' }
+            );
+            
+          if (error) throw error;
+        } catch (error) {
+          console.error("Error syncing taps:", error);
+        }
+      };
+      
+      syncTaps();
+    }
+  }, [user, data.tapsCount, data.coins, miningPower]);
   
   const earnCoins = async () => {
     setIsAnimating(true);
@@ -42,7 +72,7 @@ const Earn = () => {
     } else {
       toast({
         title: "Wallet Not Connected",
-        description: "Connect your wallet to earn real PRAY tokens",
+        description: user ? "Connect your wallet to earn real PRAY tokens" : "Sign up and connect your wallet to earn real PRAY tokens",
       });
     }
     
@@ -50,6 +80,15 @@ const Earn = () => {
   };
   
   const handleDailyReward = () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Sign up or login to claim rewards",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (!account) {
       toast({
         title: "Wallet Not Connected",
@@ -90,7 +129,16 @@ const Earn = () => {
           </div>
           <p className="text-blue-200 text-sm mt-1">Total Taps: {data.tapsCount}</p>
           
-          {!account && (
+          {!user && (
+            <Button 
+              className="mt-4 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium"
+              onClick={() => window.location.href = '/profile'}
+            >
+              Sign Up to Earn
+            </Button>
+          )}
+          
+          {user && !account && (
             <div className="mt-4">
               <ConnectWalletButton 
                 className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium"

@@ -6,44 +6,57 @@ import { Button } from "@/components/ui/button";
 import { Coins, Rocket, ChevronRight, ChartNetwork, Zap, Users } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { supabase } from "@/lib/supabase";
+import { useSupabase } from "@/contexts/SupabaseContext";
 import Coin3D from "@/components/Coin3D";
 
 const Index = () => {
+  const { user } = useSupabase();
   const [totalUsers, setTotalUsers] = useState<number | null>(null);
   const [totalHolders, setTotalHolders] = useState<number | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   
   useEffect(() => {
-    // Fetch stats from Supabase
-    const fetchStats = async () => {
+    // Count total users from auth.users
+    const fetchUserCount = async () => {
       try {
-        // Count users in auth.users table
-        const { count: userCount, error: userError } = await supabase
-          .from('users')
+        const { count, error } = await supabase
+          .from('profiles')
           .select('*', { count: 'exact', head: true });
           
-        if (userError) throw userError;
+        if (error) throw error;
         
-        // Count holders (users with wallet connected)
-        const { count: holderCount, error: holderError } = await supabase
-          .from('users')
-          .select('*', { count: 'exact', head: true })
-          .not('wallet_address', 'is', null);
-          
-        if (holderError) throw holderError;
-        
-        setTotalUsers(userCount || 0);
-        setTotalHolders(holderCount || 0);
+        setTotalUsers(count || 0);
       } catch (error) {
-        console.error("Error fetching stats:", error);
-        // Use placeholder values if error occurs
+        console.error("Error fetching user count:", error);
         setTotalUsers(0);
+      }
+    };
+    
+    // Count holders (users with wallet connected)
+    const fetchHolderCount = async () => {
+      try {
+        const { count, error } = await supabase
+          .from('wallet_connections')
+          .select('*', { count: 'exact', head: true });
+          
+        if (error) throw error;
+        
+        setTotalHolders(count || 0);
+      } catch (error) {
+        console.error("Error fetching holder count:", error);
         setTotalHolders(0);
       }
     };
     
-    fetchStats();
-  }, []);
+    if (user) {
+      fetchUserCount();
+      fetchHolderCount();
+    } else {
+      // Placeholder values for non-authenticated users
+      setTotalUsers(0);
+      setTotalHolders(0);
+    }
+  }, [user]);
   
   const handleCoinClick = () => {
     setIsAnimating(true);

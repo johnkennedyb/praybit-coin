@@ -1,6 +1,5 @@
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,21 +18,20 @@ import {
   ChevronRight,
   Settings,
   Send,
-  AlertTriangle,
   Loader2
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useWeb3 } from "@/contexts/Web3Context";
+import { useSupabase } from "@/contexts/SupabaseContext";
 import ConnectWalletButton from "@/components/ConnectWalletButton";
 import TransferModal from "@/components/TransferModal";
 
 const Profile = () => {
-  const { account, praybitBalance, ethBalance, connectWallet } = useWeb3();
+  const { account, praybitBalance, ethBalance } = useWeb3();
+  const { user, signIn, signUp, signOut, loading } = useSupabase();
   const [copied, setCopied] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [user, setUser] = useState<any>(null);
   const [showTransferModal, setShowTransferModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Login form state
   const [email, setEmail] = useState("");
@@ -49,33 +47,6 @@ const Profile = () => {
   
   const [showLoginForm, setShowLoginForm] = useState(true);
   
-  // Check for existing session on component mount
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        setUser(data.session.user);
-        setIsLoggedIn(true);
-      }
-    };
-    
-    checkSession();
-    
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        setUser(session.user);
-        setIsLoggedIn(true);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setIsLoggedIn(false);
-      }
-    });
-    
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, []);
-  
   const copyWalletAddress = () => {
     if (account) {
       navigator.clipboard.writeText(account);
@@ -89,27 +60,9 @@ const Profile = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      
-      if (error) {
-        throw error;
-      }
-      
-      toast({
-        title: "Login successful",
-        description: "Welcome back to Praybit!",
-      });
-      
-      setIsLoggedIn(true);
-    } catch (error: any) {
-      toast({
-        title: "Login failed",
-        description: error.message || "Something went wrong",
-        variant: "destructive"
-      });
+      await signIn(email, password);
+    } catch (error) {
+      // Error is already handled in the context
     } finally {
       setIsLoading(false);
     }
@@ -130,33 +83,14 @@ const Profile = () => {
     }
     
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: registerForm.email,
-        password: registerForm.password,
-        options: {
-          data: {
-            name: registerForm.name,
-          }
-        }
-      });
-      
-      if (error) {
-        throw error;
-      }
-      
-      toast({
-        title: "Registration successful",
-        description: "Please check your email to verify your account",
+      await signUp(registerForm.email, registerForm.password, {
+        name: registerForm.name,
       });
       
       // Auto switch to login form after successful registration
       setShowLoginForm(true);
-    } catch (error: any) {
-      toast({
-        title: "Registration failed",
-        description: error.message || "Something went wrong",
-        variant: "destructive"
-      });
+    } catch (error) {
+      // Error is already handled in the context
     } finally {
       setIsLoading(false);
     }
@@ -164,21 +98,9 @@ const Profile = () => {
   
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      toast({
-        title: "Signed out",
-        description: "You have been signed out successfully",
-      });
-      
-      setIsLoggedIn(false);
-    } catch (error: any) {
-      toast({
-        title: "Sign out failed",
-        description: error.message || "Something went wrong",
-        variant: "destructive"
-      });
+      await signOut();
+    } catch (error) {
+      // Error is already handled in the context
     }
   };
   
@@ -204,7 +126,7 @@ const Profile = () => {
   return (
     <AppLayout title="Profile">
       <div className="space-y-6">
-        {!isLoggedIn ? (
+        {!user ? (
           <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
             <CardHeader>
               <CardTitle className="text-xl flex items-center gap-2">

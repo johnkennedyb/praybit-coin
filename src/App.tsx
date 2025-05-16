@@ -12,28 +12,31 @@ import Earn from "./pages/Earn";
 import Profile from "./pages/Profile";
 import Referral from "./pages/Referral";
 import Social from "./pages/Social";
+import { SupabaseProvider } from "./contexts/SupabaseContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Web3Provider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/earn" element={<Earn />} />
-            <Route path="/referral" element={<Referral />} />
-            <Route path="/social" element={<Social />} />
-            <Route path="/profile" element={<Profile />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </Web3Provider>
+      <SupabaseProvider>
+        <Web3Provider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/earn" element={<Earn />} />
+              <Route path="/referral" element={<Referral />} />
+              <Route path="/social" element={<Social />} />
+              <Route path="/profile" element={<Profile />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </Web3Provider>
+      </SupabaseProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
