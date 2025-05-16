@@ -6,14 +6,11 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import AppLayout from "@/components/AppLayout";
 import { useWeb3 } from "@/contexts/Web3Context";
 import CoinTapper from "@/components/CoinTapper";
-import { toast } from "@/hooks/use-toast";
-import ReferralSystem from "@/components/ReferralSystem";
 import { Progress } from "@/components/ui/progress";
 import ConnectWalletButton from "@/components/ConnectWalletButton";
 import Stats from "@/components/Stats";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabase } from "@/contexts/SupabaseContext";
-import { usePrayData } from "@/hooks/use-pray-data";
 
 const Earn = () => {
   const { account } = useWeb3();
@@ -22,7 +19,6 @@ const Earn = () => {
   const [isEligible, setIsEligible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const { data, incrementTaps } = usePrayData();
 
   useEffect(() => {
     const checkEligibility = async () => {
@@ -45,11 +41,7 @@ const Earn = () => {
         setIsEligible(count >= 3);
         setProgress(Math.min(count, 3) / 3 * 100); // Cap progress at 100%
       } catch (error: any) {
-        toast({
-          title: "Error fetching referral count",
-          description: error.message,
-          variant: "destructive",
-        });
+        console.error("Error fetching referral count:", error.message);
       } finally {
         setIsLoading(false);
       }
@@ -68,11 +60,7 @@ const Earn = () => {
       .then(({ data, error }) => {
         setIsLoading(false);
         if (error) {
-          toast({
-            title: "Error fetching referral count",
-            description: error.message,
-            variant: "destructive",
-          });
+          console.error("Error fetching referral count:", error.message);
           return;
         }
 
@@ -81,14 +69,6 @@ const Earn = () => {
         setIsEligible(count >= 3);
         setProgress(Math.min(count, 3) / 3 * 100); // Cap progress at 100%
       });
-  };
-
-  const handleTap = () => {
-    incrementTaps();
-    toast({
-      title: "PRAY Mined!",
-      description: `You earned ${data.miningPower} PRAY tokens`,
-    });
   };
 
   return (
@@ -105,9 +85,9 @@ const Earn = () => {
           </CardHeader>
           <CardContent>
             <CoinTapper 
-              onTap={handleTap} 
-              coins={data.coins} 
-              coinsPerTap={data.miningPower || 1} 
+              onTap={() => {}}
+              coins={0}
+              coinsPerTap={1}
             />
           </CardContent>
           <CardFooter>
@@ -241,9 +221,9 @@ const Earn = () => {
       </div>
 
       <Stats 
-        coins={data.coins} 
-        tapsCount={data.tapsCount} 
-        referrals={data.referrals} 
+        coins={0} 
+        tapsCount={0} 
+        referrals={0} 
       />
     </AppLayout>
   );
