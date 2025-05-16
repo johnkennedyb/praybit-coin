@@ -9,13 +9,85 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      referrals: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          referred_id: string | null
+          referrer_id: string
+          status: string
+          updated_at: string
+          used_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          referred_id?: string | null
+          referrer_id: string
+          status?: string
+          updated_at?: string
+          used_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          referred_id?: string | null
+          referrer_id?: string
+          status?: string
+          updated_at?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
+      social_connections: {
+        Row: {
+          created_at: string
+          id: string
+          platform: string
+          profile_url: string | null
+          updated_at: string
+          user_id: string
+          username: string
+          verified: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          platform: string
+          profile_url?: string | null
+          updated_at?: string
+          user_id: string
+          username: string
+          verified?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          platform?: string
+          profile_url?: string | null
+          updated_at?: string
+          user_id?: string
+          username?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_referral_code: {
+        Args: { user_id: string }
+        Returns: string
+      }
+      process_referral: {
+        Args: { referral_code: string; new_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
