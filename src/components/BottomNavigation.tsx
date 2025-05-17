@@ -15,12 +15,12 @@ const BottomNavigation = () => {
   const isAdmin = !!user && user.email?.includes('admin');
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-blue-950 to-blue-900/95 border-t border-blue-700/50 backdrop-blur-lg z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-blue-950 to-blue-900/95 border-t border-blue-700/50 backdrop-blur-lg z-50 w-full">
       <div className={cn(
-        "mx-auto px-4 py-2 flex items-center",
+        "mx-auto py-2 flex items-center w-full px-0",
         isMobile 
-          ? "justify-around max-w-md" 
-          : "justify-center gap-8 md:gap-12 lg:gap-16 max-w-4xl"
+          ? "justify-around" 
+          : "justify-evenly"
       )}>
         <NavItem to="/" icon={<Home />} label="Home" isActive={currentPath === '/'} />
         
@@ -33,7 +33,7 @@ const BottomNavigation = () => {
         <NavItem to="/profile" icon={<User />} label="Profile" isActive={currentPath === '/profile'} />
 
         {isAdmin && (
-          <NavItem to="/admin" icon={<Shield className="md:hidden" />} label="Admin" isActive={currentPath === '/admin'} className="md:hidden" />
+          <NavItem to="/admin" icon={<Shield />} label="Admin" isActive={currentPath === '/admin'} />
         )}
       </div>
     </div>

@@ -14,6 +14,7 @@ import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import Stats from "@/components/Stats";
 import { Progress } from "@/components/ui/progress";
+import Leaderboard from "@/components/Leaderboard";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -176,12 +177,6 @@ const Index = () => {
                       ) : "Complete Task"}
                     </Button>
                   </div>
-                  
-                  <div className="border-t border-blue-700 pt-4">
-                    <Button variant="outline" className="w-full" onClick={() => navigate("/earn")}>
-                      View All Tasks & Rewards
-                    </Button>
-                  </div>
                 </CardContent>
               </Card>
             ) : (
@@ -211,15 +206,18 @@ const Index = () => {
             )}
           </div>
           
-          {user && (
-            <div className="mt-8">
+          <div className="mt-8 grid gap-8 md:grid-cols-2">
+            {user && (
               <Stats 
                 coins={data.coins || 0} 
                 tapsCount={data.tapsCount || 0} 
                 referrals={data.referrals || 0} 
               />
-            </div>
-          )}
+            )}
+            
+            {/* Leaderboard Component */}
+            <Leaderboard />
+          </div>
           
           <div className="mt-16 border-t border-blue-900/50 pt-8 text-center">
             <h2 className="text-2xl font-semibold text-white">
@@ -262,12 +260,6 @@ const Index = () => {
                   Complete tasks to earn rewards and bonuses
                 </p>
               </div>
-            </div>
-            
-            <div className="mt-8 pb-4">
-              <Button onClick={() => navigate("/earn")} variant="outline" className="border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/20">
-                View All Earning Options
-              </Button>
             </div>
           </div>
         </div>
