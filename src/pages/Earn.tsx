@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   CheckCircle2, 
   XCircle, 
@@ -51,6 +52,7 @@ const Earn = () => {
   const [referralCount, setReferralCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [completedTasks, setCompletedTasks] = useState<{[key: number]: boolean}>({});
+  const isMobile = useIsMobile();
   
   // Define tasks
   const tasks: Task[] = [
@@ -297,7 +299,7 @@ const Earn = () => {
 
   return (
     <AppLayout title="Earn Rewards">
-      <div className="container mx-auto py-6">
+      <div className="container mx-auto py-6 px-4 sm:px-6">
         <div className="mb-6">
           <div className="bg-yellow-400/10 border border-yellow-400/20 p-3 rounded-lg flex items-center gap-3">
             <AlertTriangle className="text-yellow-400 h-5 w-5 shrink-0" />
@@ -441,7 +443,7 @@ const Earn = () => {
                 </Button>
               ) : (
                 <div className="space-y-3">
-                  <div className="flex gap-2">
+                  <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-2`}>
                     <Input 
                       value={referralLink}
                       readOnly
@@ -449,11 +451,12 @@ const Earn = () => {
                     />
                     <Button 
                       variant="outline" 
-                      size="icon" 
+                      size={isMobile ? "default" : "icon"}
                       className="border-blue-600 text-blue-400 hover:bg-blue-800"
                       onClick={copyToClipboard}
                     >
-                      {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                      {isMobile && (copied ? "Copied" : "Copy")}
                     </Button>
                   </div>
                   
@@ -629,7 +632,7 @@ const Earn = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="flex items-center gap-2">
                 <Coins className="h-5 w-5 text-yellow-400" />
                 <div>

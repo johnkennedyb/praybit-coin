@@ -12,6 +12,7 @@ import Earn from "./pages/Earn";
 import Profile from "./pages/Profile";
 import Referral from "./pages/Referral";
 import Social from "./pages/Social";
+import Admin from "./pages/Admin";
 import { SupabaseProvider } from "./contexts/SupabaseContext";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/referral" element={<Referral />} />
               <Route path="/social" element={<Social />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/admin" element={<Admin />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
