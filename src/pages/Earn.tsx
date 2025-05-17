@@ -22,7 +22,8 @@ const Earn = () => {
   const [isEligible, setIsEligible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const { data, incrementTaps, claimDailyReward } = usePrayData();
+  const { data, incrementTaps, claimDailyReward, updateCoins } = usePrayData();
+  const [leaderboard, setLeaderboard] = useState([]);
 
   useEffect(() => {
     const checkEligibility = async () => {
@@ -56,6 +57,24 @@ const Earn = () => {
     };
 
     checkEligibility();
+    
+    // Load leaderboard data
+    const fetchLeaderboard = async () => {
+      try {
+        const { data: leaderboardData, error } = await supabase
+          .from('user_stats')
+          .select('user_id, coins')
+          .order('coins', { ascending: false })
+          .limit(5);
+          
+        if (error) throw error;
+        if (leaderboardData) setLeaderboard(leaderboardData);
+      } catch (err) {
+        console.error('Error fetching leaderboard:', err);
+      }
+    };
+    
+    fetchLeaderboard();
   }, [user]);
 
   const handleRefer = () => {
@@ -111,14 +130,27 @@ const Earn = () => {
 
   const handleClaimAchievement = () => {
     if (isEligible) {
+      updateCoins(50);
+      
       toast({
         title: "Achievement Reward Claimed!",
         description: "You earned 50 PRAY tokens for inviting 3 friends!",
       });
       
-      // Add the reward to user's balance
-      const { updateCoins } = usePrayData();
-      updateCoins(50);
+      // Mark achievement as claimed in Supabase
+      if (user) {
+        supabase.from('user_achievements')
+          .upsert({
+            user_id: user.id,
+            achievement_id: 'referral_milestone',
+            claimed_at: new Date().toISOString()
+          })
+          .then(({ error }) => {
+            if (error) {
+              console.error('Error recording achievement claim:', error);
+            }
+          });
+      }
     } else {
       toast({
         title: "Not Eligible",
@@ -141,18 +173,11 @@ const Earn = () => {
             <CardDescription>Tap to earn PRAY tokens</CardDescription>
           </CardHeader>
           <CardContent>
-            {account ? (
-              <CoinTapper 
-                onTap={handleTap} 
-                coins={data.coins || 0} 
-                coinsPerTap={data.miningPower || 1} 
-              />
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-sm text-blue-300 mb-4">Connect your wallet to start mining</p>
-                <ConnectWalletButton variant="outline" />
-              </div>
-            )}
+            <CoinTapper 
+              onTap={handleTap} 
+              coins={data.coins || 0} 
+              coinsPerTap={data.miningPower || 1} 
+            />
           </CardContent>
         </Card>
 
@@ -207,17 +232,11 @@ const Earn = () => {
             <CardDescription>Stake PRAY and earn passive income</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {account ? (
-              <>
-                <p className="text-sm text-blue-200">Stake your PRAY tokens to earn rewards. The more you stake, the more you earn!</p>
-                <Button disabled>Stake PRAY</Button>
-              </>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-sm text-blue-300">Connect your wallet to start staking</p>
-                <ConnectWalletButton variant="outline" />
-              </div>
-            )}
+            <p className="text-sm text-blue-200">
+              Stake your PRAY tokens to earn rewards. The more you stake, the more you earn!
+            </p>
+            <p className="text-sm text-yellow-300">Coming soon! Staking will be available after token launch.</p>
+            <Button disabled>Stake PRAY</Button>
           </CardContent>
         </Card>
 
@@ -272,10 +291,22 @@ const Earn = () => {
           <CardContent>
             <p className="text-sm text-blue-200">See who's earning the most PRAY and compete for the top spot!</p>
             <ol className="list-decimal list-inside pl-4 mt-2 text-blue-300">
-              <li>User 1 - 10000 PRAY</li>
-              <li>User 2 - 8000 PRAY</li>
-              <li>User 3 - 6000 PRAY</li>
-              {account && <li className="text-yellow-300">You - {data.coins} PRAY</li>}
+              {leaderboard.length > 0 ? (
+                leaderboard.map((entry: any, index) => (
+                  <li key={entry.user_id} className={user && entry.user_id === user.id ? "text-yellow-300" : ""}>
+                    User {index + 1} - {entry.coins} PRAY {user && entry.user_id === user.id ? "(You)" : ""}
+                  </li>
+                ))
+              ) : (
+                <>
+                  <li>User 1 - 10000 PRAY</li>
+                  <li>User 2 - 8000 PRAY</li>
+                  <li>User 3 - 6000 PRAY</li>
+                </>
+              )}
+              {user && !leaderboard.some((entry: any) => entry.user_id === user.id) && (
+                <li className="text-yellow-300">You - {data.coins} PRAY</li>
+              )}
             </ol>
           </CardContent>
           <CardFooter>
@@ -287,7 +318,7 @@ const Earn = () => {
       <Stats 
         coins={data.coins || 0} 
         tapsCount={data.tapsCount || 0} 
-        referrals={data.referrals || 0} 
+        referrals={referralCount || 0} 
       />
     </AppLayout>
   );

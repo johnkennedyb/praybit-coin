@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import BottomNavigation from "@/components/BottomNavigation";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Stats from "@/components/Stats";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ const Index = () => {
 
   return (
     <AppLayout showHeader={false}>
-      <header className="px-6 pt-6 lg:px-8">
+      <header className="px-6 pt-6 lg:px-8 bg-blue-900/20 backdrop-blur-md">
         <div className="mx-auto max-w-3xl">
           <div className="sm:flex sm:justify-between sm:gap-4">
             <div className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
@@ -63,7 +64,7 @@ const Index = () => {
         </div>
       </header>
       
-      <main className="relative mt-8 flex-grow px-6 lg:px-8">
+      <main className="relative mt-8 flex-grow px-6 lg:px-8 bg-blue-900/30">
         <div className="mx-auto max-w-3xl">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
@@ -85,18 +86,19 @@ const Index = () => {
                 <CardDescription>Tap to earn PRAY tokens</CardDescription>
               </CardHeader>
               <CardContent>
-                {account ? (
-                  <CoinTapper 
-                    onTap={handleTap}
-                    coins={data.coins || 0}
-                    coinsPerTap={data.miningPower || 1}
-                  />
-                ) : (
-                  <div className="text-center">
-                    <p className="text-sm text-blue-200 mb-3">
-                      Connect your wallet to start earning!
+                <CoinTapper 
+                  onTap={handleTap}
+                  coins={data.coins || 0}
+                  coinsPerTap={data.miningPower || 1}
+                />
+                {!user && (
+                  <div className="mt-4 text-center">
+                    <p className="text-sm text-blue-200 mb-2">
+                      Register to save your progress and earn more rewards!
                     </p>
-                    <ConnectWalletButton />
+                    <Button onClick={() => navigate("/profile")} variant="outline">
+                      Register Now
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -126,6 +128,16 @@ const Index = () => {
               </CardContent>
             </Card>
           </div>
+          
+          {user && (
+            <div className="mt-8">
+              <Stats 
+                coins={data.coins || 0} 
+                tapsCount={data.tapsCount || 0} 
+                referrals={data.referrals || 0} 
+              />
+            </div>
+          )}
           
           <div className="mt-16 border-t border-blue-900/50 pt-8 text-center">
             <h2 className="text-2xl font-semibold text-white">
@@ -179,11 +191,13 @@ const Index = () => {
         </div>
       </main>
       
-      <footer className="relative mt-16 border-t border-blue-900/50 py-8 px-6 lg:px-8 pb-24">
+      <footer className="relative mt-16 border-t border-blue-900/50 py-8 px-6 lg:px-8 pb-24 bg-blue-900/20">
         <div className="mx-auto max-w-3xl text-center text-sm text-blue-200">
           &copy; {new Date().getFullYear()} Praybit. All rights reserved.
         </div>
       </footer>
+      
+      <BottomNavigation />
     </AppLayout>
   );
 };

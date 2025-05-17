@@ -1,6 +1,8 @@
 
 import { useState, useEffect } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
+import { useSupabase } from '@/contexts/SupabaseContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PrayData {
   coins: number;
@@ -19,10 +21,58 @@ const defaultData: PrayData = {
 
 export function usePrayData() {
   const { account } = useWeb3();
+  const { user } = useSupabase();
   const [data, setData] = useState<PrayData>(() => {
     const savedData = localStorage.getItem('praybitData');
     return savedData ? JSON.parse(savedData) : defaultData;
   });
+  
+  // Load data from Supabase when user is authenticated
+  useEffect(() => {
+    if (user) {
+      const fetchUserData = async () => {
+        try {
+          // Check if user has existing data in Supabase
+          const { data: userData, error } = await supabase
+            .from('user_stats')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+            
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching user stats:', error);
+            return;
+          }
+          
+          if (userData) {
+            // If user data exists, use it
+            setData({
+              coins: userData.coins || 0,
+              tapsCount: userData.taps_count || 0,
+              referrals: userData.referrals || 0,
+              lastDailyReward: userData.last_daily_reward,
+              miningPower: Math.floor(1 + ((userData.taps_count || 0) / 100))
+            });
+          } else if (user.id) {
+            // If no user data in Supabase but we have local data, save it to Supabase
+            const localData = JSON.parse(localStorage.getItem('praybitData') || JSON.stringify(defaultData));
+            
+            await supabase.from('user_stats').insert({
+              user_id: user.id,
+              coins: localData.coins,
+              taps_count: localData.tapsCount,
+              referrals: localData.referrals,
+              last_daily_reward: localData.lastDailyReward
+            });
+          }
+        } catch (err) {
+          console.error('Error in fetchUserData:', err);
+        }
+      };
+      
+      fetchUserData();
+    }
+  }, [user]);
   
   useEffect(() => {
     localStorage.setItem('praybitData', JSON.stringify(data));
@@ -39,6 +89,29 @@ export function usePrayData() {
     }
   }, [data.tapsCount, data.miningPower]);
   
+  // Sync data with Supabase when it changes and user is logged in
+  useEffect(() => {
+    const updateSupabaseData = async () => {
+      if (!user) return;
+      
+      try {
+        await supabase.from('user_stats').upsert({
+          user_id: user.id,
+          coins: data.coins,
+          taps_count: data.tapsCount,
+          referrals: data.referrals,
+          last_daily_reward: data.lastDailyReward
+        });
+      } catch (err) {
+        console.error('Error updating Supabase data:', err);
+      }
+    };
+    
+    // Debounce the updates to avoid too many API calls
+    const timeoutId = setTimeout(updateSupabaseData, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [data, user]);
+  
   const updateCoins = (amount: number) => {
     setData(prev => ({
       ...prev,
@@ -47,14 +120,13 @@ export function usePrayData() {
   };
   
   const incrementTaps = () => {
-    // When connected to MetaMask, we track taps but coins are handled by the blockchain
+    // Everyone can mine coins, regardless of wallet connection
     const miningPower = Math.floor(1 + (data.tapsCount / 100));
     
     setData(prev => ({
       ...prev,
       tapsCount: prev.tapsCount + 1,
-      // Only update the local coin count if not connected to wallet
-      coins: !account ? prev.coins + miningPower : prev.coins,
+      coins: prev.coins + miningPower,
     }));
   };
   
@@ -62,8 +134,7 @@ export function usePrayData() {
     setData(prev => ({
       ...prev,
       referrals: prev.referrals + 1,
-      // Only update the local coin count if not connected to wallet
-      coins: !account ? prev.coins + 10 : prev.coins, // Add 10 coins per referral
+      coins: prev.coins + 10, // Add 10 coins per referral
     }));
   };
   
@@ -77,8 +148,7 @@ export function usePrayData() {
     setData(prev => ({
       ...prev,
       lastDailyReward: today,
-      // Only update the local coin count if not connected to wallet
-      coins: !account ? prev.coins + 5 : prev.coins, // Add 5 coins for daily reward
+      coins: prev.coins + 5, // Add 5 coins for daily reward
     }));
     
     return true; // Successfully claimed
@@ -87,6 +157,16 @@ export function usePrayData() {
   const resetData = () => {
     setData(defaultData);
     localStorage.removeItem('praybitData');
+    
+    if (user) {
+      supabase.from('user_stats').upsert({
+        user_id: user.id,
+        coins: 0,
+        taps_count: 0,
+        referrals: 0,
+        last_daily_reward: null
+      });
+    }
   };
   
   return {
