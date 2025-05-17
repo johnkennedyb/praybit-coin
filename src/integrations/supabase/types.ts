@@ -75,6 +75,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_stats: {
+        Row: {
+          coins: number
+          created_at: string
+          id: string
+          last_daily_reward: string | null
+          referrals: number
+          taps_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          coins?: number
+          created_at?: string
+          id?: string
+          last_daily_reward?: string | null
+          referrals?: number
+          taps_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          coins?: number
+          created_at?: string
+          id?: string
+          last_daily_reward?: string | null
+          referrals?: number
+          taps_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { useSupabase } from '@/contexts/SupabaseContext';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 interface PrayData {
   coins: number;
@@ -33,6 +34,7 @@ export function usePrayData() {
       const fetchUserData = async () => {
         try {
           // Check if user has existing data in Supabase
+          // Using explicit types to avoid TypeScript errors
           const { data: userData, error } = await supabase
             .from('user_stats')
             .select('*')
@@ -57,13 +59,22 @@ export function usePrayData() {
             // If no user data in Supabase but we have local data, save it to Supabase
             const localData = JSON.parse(localStorage.getItem('praybitData') || JSON.stringify(defaultData));
             
-            await supabase.from('user_stats').insert({
-              user_id: user.id,
-              coins: localData.coins,
-              taps_count: localData.tapsCount,
-              referrals: localData.referrals,
-              last_daily_reward: localData.lastDailyReward
-            });
+            try {
+              await supabase.from('user_stats').insert({
+                user_id: user.id,
+                coins: localData.coins,
+                taps_count: localData.tapsCount,
+                referrals: localData.referrals,
+                last_daily_reward: localData.lastDailyReward
+              });
+            } catch (insertError) {
+              console.error('Error inserting user stats:', insertError);
+              toast({
+                title: "Error",
+                description: "Failed to save your data",
+                variant: "destructive"
+              });
+            }
           }
         } catch (err) {
           console.error('Error in fetchUserData:', err);
@@ -72,7 +83,7 @@ export function usePrayData() {
       
       fetchUserData();
     }
-  }, [user]);
+  }, [user, toast]);
   
   useEffect(() => {
     localStorage.setItem('praybitData', JSON.stringify(data));
@@ -159,13 +170,18 @@ export function usePrayData() {
     localStorage.removeItem('praybitData');
     
     if (user) {
-      supabase.from('user_stats').upsert({
-        user_id: user.id,
-        coins: 0,
-        taps_count: 0,
-        referrals: 0,
-        last_daily_reward: null
-      });
+      // Update Supabase with reset data
+      try {
+        supabase.from('user_stats').upsert({
+          user_id: user.id,
+          coins: 0,
+          taps_count: 0,
+          referrals: 0,
+          last_daily_reward: null
+        });
+      } catch (error) {
+        console.error('Error resetting user stats:', error);
+      }
     }
   };
   
