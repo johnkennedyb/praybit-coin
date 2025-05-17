@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '@/contexts/Web3Context';
@@ -9,53 +10,62 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle } from "lucide-react";
 
+// Define a type for achievements
+interface Achievement {
+  id: number;
+  title: string;
+  description: string;
+  reward: number;
+}
+
 const Earn = () => {
   const navigate = useNavigate();
   const { account } = useWeb3();
   const { user } = useSupabase();
-  const [achievements, setAchievements] = useState<any[]>([]);
-  const [isCompleted, setIsCompleted] = useState({});
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [isCompleted, setIsCompleted] = useState<{[key: number]: boolean}>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchAchievements = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase
-          .from('achievements')
-          .select('*');
-
-        if (error) {
-          console.error('Error fetching achievements:', error);
-          toast({
-            title: "Error",
-            description: "Failed to load achievements",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        setAchievements(data);
+        // Since there's no achievements table, we'll create them directly in code
+        // This is a temporary solution until an achievements table is created in Supabase
+        const defaultAchievements: Achievement[] = [
+          { 
+            id: 1, 
+            title: "Tap Master", 
+            description: "Tap 100 times to earn coins", 
+            reward: 50 
+          },
+          { 
+            id: 2, 
+            title: "Social Butterfly", 
+            description: "Refer a friend to earn coins", 
+            reward: 100 
+          },
+          { 
+            id: 3, 
+            title: "Coin Collector", 
+            description: "Accumulate 1000 PRAY coins", 
+            reward: 200 
+          }
+        ];
+        
+        setAchievements(defaultAchievements);
         
         if (user) {
           const userId = user.id;
           
-          // Instead of querying a table that doesn't exist, we'll adapt the code to use user_stats
-          // which is one of the existing tables in Supabase
-          
-          // Looking for a code block like this:
-          // const { data: userAchievements, error: achievementsError } = await supabase
-          //   .from("user_achievements")
-          //   .select("*")
-          //   .eq("user_id", userId);
-          
-          // And replacing it with:
+          // Get user stats to check achievements
           const { data: userStats, error: statsError } = await supabase
             .from("user_stats")
             .select("*")
-            .eq("user_id", userId);
+            .eq("user_id", userId)
+            .single();
           
-          if (statsError) {
+          if (statsError && statsError.code !== 'PGRST116') {
             console.error('Error fetching user achievements:', statsError);
             toast({
               title: "Error",
@@ -66,17 +76,16 @@ const Earn = () => {
           }
           
           // Initialize isCompleted based on userStats
-          if (userStats && userStats.length > 0) {
-            const stats = userStats[0];
-            const completed: { [key: string]: boolean } = {};
+          if (userStats) {
+            const completed: { [key: number]: boolean } = {};
             
-            data.forEach(achievement => {
+            defaultAchievements.forEach(achievement => {
               if (achievement.id === 1) {
-                completed[achievement.id] = stats.taps_count >= 100;
+                completed[achievement.id] = userStats.taps_count >= 100;
               } else if (achievement.id === 2) {
-                completed[achievement.id] = stats.referrals >= 1;
+                completed[achievement.id] = userStats.referrals >= 1;
               } else if (achievement.id === 3) {
-                completed[achievement.id] = stats.coins >= 1000;
+                completed[achievement.id] = userStats.coins >= 1000;
               } else {
                 completed[achievement.id] = false;
               }
@@ -85,8 +94,8 @@ const Earn = () => {
             setIsCompleted(completed);
           } else {
             // If no user stats, initialize all achievements as not completed
-            const initialCompleted: { [key: string]: boolean } = {};
-            data.forEach(achievement => {
+            const initialCompleted: { [key: number]: boolean } = {};
+            defaultAchievements.forEach(achievement => {
               initialCompleted[achievement.id] = false;
             });
             setIsCompleted(initialCompleted);
@@ -122,31 +131,38 @@ const Earn = () => {
       setIsCompleted(prev => ({ ...prev, [achievementId]: true }));
 
       // Update user's coin balance in Supabase
-      const { error } = await supabase.from('user_stats').upsert([
-        {
-          user_id: user.id,
-          coins: {
-            // Use a function to ensure we're incrementing the existing value
-            ['+']: reward,
-          },
-        },
-      ], { onConflict: 'user_id' });
+      const { error } = await supabase.rpc('increment_coins', {
+        user_id_input: user.id,
+        amount: reward
+      }).single();
 
       if (error) {
         console.error('Error claiming reward:', error);
-        toast({
-          title: "Error",
-          description: "Failed to claim reward",
-          variant: "destructive"
-        });
-        // Revert the UI update if the Supabase update fails
-        setIsCompleted(prev => ({ ...prev, [achievementId]: false }));
-      } else {
-        toast({
-          title: "Reward Claimed!",
-          description: `You have claimed ${reward} coins.`,
-        });
+        
+        // Let's try a fallback method if the RPC doesn't exist yet
+        const { error: updateError } = await supabase
+          .from('user_stats')
+          .update({ coins: supabase.rpc('get_coins', { user_id_input: user.id }) + reward })
+          .eq('user_id', user.id);
+
+        if (updateError) {
+          console.error('Error with fallback update:', updateError);
+          toast({
+            title: "Error",
+            description: "Failed to claim reward",
+            variant: "destructive"
+          });
+          // Revert the UI update if both methods fail
+          setIsCompleted(prev => ({ ...prev, [achievementId]: false }));
+          return;
+        }
       }
+
+      toast({
+        title: "Reward Claimed!",
+        description: `You have claimed ${reward} coins.`,
+      });
+      
     } catch (err) {
       console.error('Error in handleClaimReward:', err);
       toast({
