@@ -22,7 +22,7 @@ const Earn = () => {
   const [isEligible, setIsEligible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const { data, incrementTaps } = usePrayData();
+  const { data, incrementTaps, claimDailyReward } = usePrayData();
 
   useEffect(() => {
     const checkEligibility = async () => {
@@ -61,26 +61,28 @@ const Earn = () => {
   const handleRefer = () => {
     // Refresh referral count after a new referral is created
     setIsLoading(true);
-    supabase
-      .from('referrals')
-      .select('*', { count: 'exact' })
-      .eq('referrer_id', user?.id)
-      .then(({ data, error }) => {
-        setIsLoading(false);
-        if (error) {
-          toast({
-            title: "Error fetching referral count",
-            description: error.message,
-            variant: "destructive",
-          });
-          return;
-        }
+    if (user) {
+      supabase
+        .from('referrals')
+        .select('*', { count: 'exact' })
+        .eq('referrer_id', user.id)
+        .then(({ data, error }) => {
+          setIsLoading(false);
+          if (error) {
+            toast({
+              title: "Error fetching referral count",
+              description: error.message,
+              variant: "destructive",
+            });
+            return;
+          }
 
-        const count = data ? data.length : 0;
-        setReferralCount(count);
-        setIsEligible(count >= 3);
-        setProgress(Math.min(count, 3) / 3 * 100); // Cap progress at 100%
-      });
+          const count = data ? data.length : 0;
+          setReferralCount(count);
+          setIsEligible(count >= 3);
+          setProgress(Math.min(count, 3) / 3 * 100); // Cap progress at 100%
+        });
+    }
   };
 
   const handleTap = () => {
@@ -89,6 +91,41 @@ const Earn = () => {
       title: "PRAY Mined!",
       description: `You earned ${data.miningPower} PRAY tokens`,
     });
+  };
+
+  const handleClaimDailyReward = () => {
+    const claimed = claimDailyReward();
+    if (claimed) {
+      toast({
+        title: "Daily Reward Claimed!",
+        description: "You earned 5 PRAY tokens.",
+      });
+    } else {
+      toast({
+        title: "Already Claimed",
+        description: "You've already claimed your daily reward today.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleClaimAchievement = () => {
+    if (isEligible) {
+      toast({
+        title: "Achievement Reward Claimed!",
+        description: "You earned 50 PRAY tokens for inviting 3 friends!",
+      });
+      
+      // Add the reward to user's balance
+      const { updateCoins } = usePrayData();
+      updateCoins(50);
+    } else {
+      toast({
+        title: "Not Eligible",
+        description: "You need to invite 3 friends first.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -104,15 +141,19 @@ const Earn = () => {
             <CardDescription>Tap to earn PRAY tokens</CardDescription>
           </CardHeader>
           <CardContent>
-            <CoinTapper 
-              onTap={handleTap} 
-              coins={data.coins || 0} 
-              coinsPerTap={data.miningPower || 1} 
-            />
+            {account ? (
+              <CoinTapper 
+                onTap={handleTap} 
+                coins={data.coins || 0} 
+                coinsPerTap={data.miningPower || 1} 
+              />
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-sm text-blue-300 mb-4">Connect your wallet to start mining</p>
+                <ConnectWalletButton variant="outline" />
+              </div>
+            )}
           </CardContent>
-          <CardFooter>
-            <ConnectWalletButton variant="outline" />
-          </CardFooter>
         </Card>
 
         {/* Referral System Card */}
@@ -133,6 +174,26 @@ const Earn = () => {
                 <ConnectWalletButton variant="outline" />
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Daily Rewards Card */}
+        <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <CalendarDays className="h-5 w-5 text-sky-400" />
+              Daily Rewards
+            </CardTitle>
+            <CardDescription>Claim your daily PRAY tokens</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 flex flex-col items-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-sky-600 rounded-full flex items-center justify-center">
+              <span className="text-xl font-bold text-white">+5</span>
+            </div>
+            <p className="text-sm text-blue-200">
+              Come back every day to claim free PRAY tokens!
+            </p>
+            <Button onClick={handleClaimDailyReward} className="w-full">Claim Daily Reward</Button>
           </CardContent>
         </Card>
 
@@ -178,8 +239,11 @@ const Earn = () => {
             </div>
 
             {isEligible ? (
-              <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-medium">
-                Claim Reward
+              <Button 
+                onClick={handleClaimAchievement}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-medium"
+              >
+                Claim 50 PRAY Reward
               </Button>
             ) : (
               <Button variant="secondary" disabled={true}>
@@ -211,32 +275,12 @@ const Earn = () => {
               <li>User 1 - 10000 PRAY</li>
               <li>User 2 - 8000 PRAY</li>
               <li>User 3 - 6000 PRAY</li>
+              {account && <li className="text-yellow-300">You - {data.coins} PRAY</li>}
             </ol>
           </CardContent>
-        </Card>
-
-        {/* Daily Rewards Card */}
-        <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <CalendarDays className="h-5 w-5 text-sky-400" />
-              Daily Rewards
-            </CardTitle>
-            <CardDescription>Claim your daily PRAY tokens</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {account ? (
-              <>
-                <p className="text-sm text-blue-200">Come back every day to claim your daily PRAY tokens!</p>
-                <Button>Claim Daily Reward</Button>
-              </>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-sm text-blue-300">Connect your wallet to claim daily rewards</p>
-                <ConnectWalletButton variant="outline" />
-              </div>
-            )}
-          </CardContent>
+          <CardFooter>
+            <Button variant="outline" className="w-full">View Full Leaderboard</Button>
+          </CardFooter>
         </Card>
       </div>
 
