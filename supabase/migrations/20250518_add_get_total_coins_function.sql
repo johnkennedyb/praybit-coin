@@ -1,4 +1,5 @@
 
+-- This function already exists, but adding it here for completeness
 CREATE OR REPLACE FUNCTION public.get_total_coins()
  RETURNS integer
  LANGUAGE plpgsql
