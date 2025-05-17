@@ -566,15 +566,6 @@ const Earn = () => {
                 </Button>
               </div>
               
-              <div className="border-t border-blue-700/50 pt-4">
-                <Button 
-                  variant="ghost" 
-                  className="w-full text-blue-200 hover:text-blue-100"
-                  onClick={() => navigate("/achievements")}
-                >
-                  View All Achievements <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
             </CardContent>
           </Card>
 
@@ -609,13 +600,7 @@ const Earn = () => {
                 </div>
               </div>
               
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => navigate("/leaderboard")}
-              >
-                View Full Leaderboard
-              </Button>
+             
             </CardContent>
           </Card>
         </div>
