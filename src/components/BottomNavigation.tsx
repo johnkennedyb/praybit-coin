@@ -1,21 +1,27 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { Home, CircleDollarSign, User, Share2, Link2, Shield } from 'lucide-react';
+import { Home, CircleDollarSign, User, Share2, Link2 } from 'lucide-react';
 import { useSupabase } from '@/contexts/SupabaseContext';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const BottomNavigation = () => {
   const location = useLocation();
   const { user } = useSupabase();
   const currentPath = location.pathname;
+  const isMobile = useIsMobile();
   
   // Check if user is admin (in a real app, this would check admin status)
-  // For demo purposes, any logged-in user with email containing admin is considered an admin
   const isAdmin = !!user && user.email?.includes('admin');
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-blue-950 to-blue-900/95 border-t border-blue-700/50 backdrop-blur-lg z-50">
-      <div className="max-w-md mx-auto px-4 py-2 flex justify-around">
+      <div className={cn(
+        "mx-auto px-4 py-2 flex items-center",
+        isMobile 
+          ? "justify-around max-w-md" 
+          : "justify-center gap-8 md:gap-12 lg:gap-16 max-w-4xl"
+      )}>
         <NavItem to="/" icon={<Home />} label="Home" isActive={currentPath === '/'} />
         
         <NavItem to="/earn" icon={<CircleDollarSign />} label="Earn" isActive={currentPath === '/earn'} />
@@ -27,7 +33,7 @@ const BottomNavigation = () => {
         <NavItem to="/profile" icon={<User />} label="Profile" isActive={currentPath === '/profile'} />
 
         {isAdmin && (
-          <NavItem to="/admin" icon={<Shield />} label="Admin" isActive={currentPath === '/admin'} className="hidden md:flex" />
+          <NavItem to="/admin" icon={<Shield className="md:hidden" />} label="Admin" isActive={currentPath === '/admin'} className="md:hidden" />
         )}
       </div>
     </div>
@@ -46,10 +52,10 @@ const NavItem = ({ to, icon, label, isActive, className }: NavItemProps) => (
   <Link 
     to={to}
     className={cn(
-      "flex flex-col items-center justify-center px-2 py-1 rounded-md",
+      "flex flex-col items-center justify-center px-2 py-1 rounded-md transition-all duration-200",
       isActive 
         ? "text-yellow-400" 
-        : "text-blue-300 hover:text-blue-100",
+        : "text-blue-300 hover:text-blue-100 hover:scale-105",
       className
     )}
   >

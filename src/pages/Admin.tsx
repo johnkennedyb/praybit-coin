@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSupabase } from "@/contexts/SupabaseContext";
@@ -113,25 +112,23 @@ const AdminPage = () => {
 
   const calculateTotalTokens = async () => {
     try {
-      // Call the get_total_coins function
-      // The function is not in the types, so we need to use a direct SQL query instead
+      // Using a direct SQL query instead of RPC since the function is not in the types
       const { data, error } = await supabase
-        .rpc('get_total_coins');
+        .from('user_stats')
+        .select('coins');
       
       if (error) throw error;
       
-      // Make sure we're handling the response correctly by explicitly checking the type
-      if (typeof data === 'number') {
-        setTotalTokens(data);
-      } else {
-        console.error("Unexpected data type from get_total_coins:", data);
-        // Fallback calculation
-        const total = users.reduce((sum, user) => sum + user.coins, 0);
+      // Calculate the total coins
+      if (data && data.length > 0) {
+        const total = data.reduce((sum, row) => sum + (row.coins || 0), 0);
         setTotalTokens(total);
+      } else {
+        setTotalTokens(0);
       }
     } catch (error) {
       console.error("Error calculating total tokens:", error);
-      // Fallback calculation if RPC fails
+      // Fallback calculation
       const total = users.reduce((sum, user) => sum + user.coins, 0);
       setTotalTokens(total);
     }
