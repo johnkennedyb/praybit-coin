@@ -37,7 +37,7 @@ const ReferralSystem = ({ onRefer, referralCount }: ReferralSystemProps) => {
 
         if (existingReferrals && existingReferrals.length > 0) {
           setReferralCode(existingReferrals[0].code);
-          setReferralLink(`${window.location.origin}?ref=${existingReferrals[0].code}`);
+          setReferralLink(`https://coin.praybit.com?ref=${existingReferrals[0].code}`);
         }
       } catch (error: any) {
         console.error('Error fetching referral code:', error.message);
@@ -68,7 +68,7 @@ const ReferralSystem = ({ onRefer, referralCount }: ReferralSystemProps) => {
       
       if (data) {
         setReferralCode(data);
-        setReferralLink(`${window.location.origin}?ref=${data}`);
+        setReferralLink(`https://coin.praybit.com?ref=${data}`);
         onRefer();
         
         toast({

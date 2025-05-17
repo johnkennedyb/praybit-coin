@@ -31,7 +31,7 @@ const CoinTapper = ({ onTap, coins, coinsPerTap }: CoinTapperProps) => {
   };
   
   return (
-    <div className="flex flex-col items-center gap-6 py-8">
+    <div className="flex flex-col items-center justify-center w-full gap-6 py-8">
       <div className="flex flex-col items-center">
         <div className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent animate-pulse">
           {formatNumber(coins)} <span className="text-base text-yellow-200">PRAY</span>
@@ -45,7 +45,7 @@ const CoinTapper = ({ onTap, coins, coinsPerTap }: CoinTapperProps) => {
         </div>
       </div>
       
-      <div className="relative">
+      <div className="relative flex justify-center w-full">
         <Button 
           className={`h-32 w-32 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 hover:from-amber-300 hover:via-yellow-400 hover:to-amber-500 shadow-lg shadow-amber-600/30 transition-all ${isAnimating ? 'scale-95' : 'scale-100'}`}
           size="lg"

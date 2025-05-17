@@ -45,13 +45,13 @@ const Index = () => {
 
   return (
     <AppLayout showHeader={false}>
-      <header className="px-6 pt-6 lg:px-8 bg-blue-900/20 backdrop-blur-md">
+      <header className="px-8 pt-8 lg:px-10 bg-blue-900/20 backdrop-blur-md">
         <div className="mx-auto max-w-3xl">
-          <div className="sm:flex sm:justify-between sm:gap-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:gap-4 items-center">
             <div className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
               Praybit
             </div>
-            <div className="mt-4 flex justify-end gap-4 sm:mt-0">
+            <div className="mt-4 sm:mt-0">
               {user ? (
                 <ConnectWalletButton showNetwork={false} />
               ) : (
@@ -64,7 +64,7 @@ const Index = () => {
         </div>
       </header>
       
-      <main className="relative mt-8 flex-grow px-6 lg:px-8 bg-blue-900/30">
+      <main className="relative mt-8 px-8 lg:px-10 py-6 flex-grow bg-blue-900/30">
         <div className="mx-auto max-w-3xl">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
@@ -76,16 +76,16 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-            <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
-              <CardHeader>
+          <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
+            <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl p-2">
+              <CardHeader className="px-6">
                 <CardTitle className="text-xl flex items-center gap-2">
                   <Zap className="h-5 w-5 text-yellow-400" />
                   Praybit Mining
                 </CardTitle>
                 <CardDescription>Tap to earn PRAY tokens</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex justify-center px-6 pb-6">
                 <CoinTapper 
                   onTap={handleTap}
                   coins={data.coins || 0}
@@ -104,15 +104,15 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
-              <CardHeader>
+            <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl p-2">
+              <CardHeader className="px-6">
                 <CardTitle className="text-xl flex items-center gap-2">
                   <CircleDollarSign className="h-5 w-5 text-yellow-400" />
                   Daily Rewards
                 </CardTitle>
                 <CardDescription>Claim your daily bonus</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4 flex flex-col items-center">
+              <CardContent className="space-y-4 flex flex-col items-center px-6 pb-6">
                 <div className="w-24 h-24 bg-gradient-to-br from-yellow-300 to-amber-600 rounded-full flex items-center justify-center">
                   <span className="text-3xl font-bold text-blue-900">+5</span>
                 </div>
@@ -144,7 +144,7 @@ const Index = () => {
               Ways to Earn PRAY
             </h2>
             <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-              <div className="p-4 bg-blue-800/30 rounded-lg border border-blue-700/50">
+              <div className="p-6 bg-blue-800/30 rounded-lg border border-blue-700/50">
                 <TrendingUp className="mx-auto h-10 w-10 text-yellow-400" />
                 <h3 className="mt-4 text-lg font-medium text-white">
                   Mining
@@ -153,7 +153,7 @@ const Index = () => {
                   Earn PRAY tokens by tapping the mining button
                 </p>
               </div>
-              <div className="p-4 bg-blue-800/30 rounded-lg border border-blue-700/50">
+              <div className="p-6 bg-blue-800/30 rounded-lg border border-blue-700/50">
                 <Users className="mx-auto h-10 w-10 text-yellow-400" />
                 <h3 className="mt-4 text-lg font-medium text-white">
                   Referrals
@@ -162,7 +162,7 @@ const Index = () => {
                   Invite friends and earn 10 PRAY per referral
                 </p>
               </div>
-              <div className="p-4 bg-blue-800/30 rounded-lg border border-blue-700/50">
+              <div className="p-6 bg-blue-800/30 rounded-lg border border-blue-700/50">
                 <Shield className="mx-auto h-10 w-10 text-yellow-400" />
                 <h3 className="mt-4 text-lg font-medium text-white">
                   Staking
@@ -171,7 +171,7 @@ const Index = () => {
                   Earn passive income by staking your PRAY tokens
                 </p>
               </div>
-              <div className="p-4 bg-blue-800/30 rounded-lg border border-blue-700/50">
+              <div className="p-6 bg-blue-800/30 rounded-lg border border-blue-700/50">
                 <Trophy className="mx-auto h-10 w-10 text-yellow-400" />
                 <h3 className="mt-4 text-lg font-medium text-white">
                   Achievements
@@ -182,7 +182,7 @@ const Index = () => {
               </div>
             </div>
             
-            <div className="mt-8">
+            <div className="mt-8 pb-4">
               <Button onClick={() => navigate("/earn")} variant="outline" className="border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/20">
                 View All Earning Options
               </Button>
@@ -191,10 +191,8 @@ const Index = () => {
         </div>
       </main>
       
-      <footer className="relative mt-16 border-t border-blue-900/50 py-8 px-6 lg:px-8 pb-24 bg-blue-900/20">
-        <div className="mx-auto max-w-3xl text-center text-sm text-blue-200">
-          &copy; {new Date().getFullYear()} Praybit. All rights reserved.
-        </div>
+      <footer className="relative mt-12 border-t border-blue-900/50 py-8 px-8 lg:px-10 pb-24 bg-blue-900/20">
+        {/* Footer content without rights reserved text */}
       </footer>
       
       <BottomNavigation />

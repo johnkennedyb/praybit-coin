@@ -1,325 +1,204 @@
-
-import { useEffect, useState } from "react";
-import { CircleDollarSign, Zap, Award, Users, Trophy, CalendarDays, Loader2 } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useWeb3 } from '@/contexts/Web3Context';
+import { useSupabase } from '@/contexts/SupabaseContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import AppLayout from '@/components/AppLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import AppLayout from "@/components/AppLayout";
-import { useWeb3 } from "@/contexts/Web3Context";
-import CoinTapper from "@/components/CoinTapper";
-import { toast } from "@/hooks/use-toast";
-import ReferralSystem from "@/components/ReferralSystem";
-import { Progress } from "@/components/ui/progress";
-import ConnectWalletButton from "@/components/ConnectWalletButton";
-import Stats from "@/components/Stats";
-import { supabase } from "@/integrations/supabase/client";
-import { useSupabase } from "@/contexts/SupabaseContext";
-import { usePrayData } from "@/hooks/use-pray-data";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 const Earn = () => {
+  const navigate = useNavigate();
   const { account } = useWeb3();
   const { user } = useSupabase();
-  const [referralCount, setReferralCount] = useState(0);
-  const [isEligible, setIsEligible] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const { data, incrementTaps, claimDailyReward, updateCoins } = usePrayData();
-  const [leaderboard, setLeaderboard] = useState([]);
+  const [achievements, setAchievements] = useState<any[]>([]);
+  const [isCompleted, setIsCompleted] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkEligibility = async () => {
-      if (!user) return;
-
+    const fetchAchievements = async () => {
       setIsLoading(true);
       try {
-        // Fetch the number of referrals for the current user
         const { data, error } = await supabase
-          .from('referrals')
-          .select('*', { count: 'exact' })
-          .eq('referrer_id', user.id);
+          .from('achievements')
+          .select('*');
 
         if (error) {
-          throw error;
+          console.error('Error fetching achievements:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load achievements",
+            variant: "destructive"
+          });
+          return;
         }
 
-        const count = data ? data.length : 0;
-        setReferralCount(count);
-        setIsEligible(count >= 3);
-        setProgress(Math.min(count, 3) / 3 * 100); // Cap progress at 100%
-      } catch (error: any) {
+        setAchievements(data);
+        
+        if (user) {
+          const userId = user.id;
+          
+          // Instead of querying a table that doesn't exist, we'll adapt the code to use user_stats
+          // which is one of the existing tables in Supabase
+          
+          // Looking for a code block like this:
+          // const { data: userAchievements, error: achievementsError } = await supabase
+          //   .from("user_achievements")
+          //   .select("*")
+          //   .eq("user_id", userId);
+          
+          // And replacing it with:
+          const { data: userStats, error: statsError } = await supabase
+            .from("user_stats")
+            .select("*")
+            .eq("user_id", userId);
+          
+          if (statsError) {
+            console.error('Error fetching user achievements:', statsError);
+            toast({
+              title: "Error",
+              description: "Failed to load user achievements",
+              variant: "destructive"
+            });
+            return;
+          }
+          
+          // Initialize isCompleted based on userStats
+          if (userStats && userStats.length > 0) {
+            const stats = userStats[0];
+            const completed: { [key: string]: boolean } = {};
+            
+            data.forEach(achievement => {
+              if (achievement.id === 1) {
+                completed[achievement.id] = stats.taps_count >= 100;
+              } else if (achievement.id === 2) {
+                completed[achievement.id] = stats.referrals >= 1;
+              } else if (achievement.id === 3) {
+                completed[achievement.id] = stats.coins >= 1000;
+              } else {
+                completed[achievement.id] = false;
+              }
+            });
+            
+            setIsCompleted(completed);
+          } else {
+            // If no user stats, initialize all achievements as not completed
+            const initialCompleted: { [key: string]: boolean } = {};
+            data.forEach(achievement => {
+              initialCompleted[achievement.id] = false;
+            });
+            setIsCompleted(initialCompleted);
+          }
+        }
+      } catch (err) {
+        console.error('Error in fetchAchievements:', err);
         toast({
-          title: "Error fetching referral count",
-          description: error.message,
-          variant: "destructive",
+          title: "Error",
+          description: "Failed to load achievements",
+          variant: "destructive"
         });
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkEligibility();
-    
-    // Load leaderboard data
-    const fetchLeaderboard = async () => {
-      try {
-        const { data: leaderboardData, error } = await supabase
-          .from('user_stats')
-          .select('user_id, coins')
-          .order('coins', { ascending: false })
-          .limit(5);
-          
-        if (error) throw error;
-        if (leaderboardData) setLeaderboard(leaderboardData);
-      } catch (err) {
-        console.error('Error fetching leaderboard:', err);
-      }
-    };
-    
-    fetchLeaderboard();
-  }, [user]);
+    fetchAchievements();
+  }, [user, toast]);
 
-  const handleRefer = () => {
-    // Refresh referral count after a new referral is created
-    setIsLoading(true);
-    if (user) {
-      supabase
-        .from('referrals')
-        .select('*', { count: 'exact' })
-        .eq('referrer_id', user.id)
-        .then(({ data, error }) => {
-          setIsLoading(false);
-          if (error) {
-            toast({
-              title: "Error fetching referral count",
-              description: error.message,
-              variant: "destructive",
-            });
-            return;
-          }
+  const handleClaimReward = async (achievementId: number, reward: number) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to claim rewards",
+        variant: "destructive",
+      });
+      return;
+    }
 
-          const count = data ? data.length : 0;
-          setReferralCount(count);
-          setIsEligible(count >= 3);
-          setProgress(Math.min(count, 3) / 3 * 100); // Cap progress at 100%
+    try {
+      // Optimistically update the UI
+      setIsCompleted(prev => ({ ...prev, [achievementId]: true }));
+
+      // Update user's coin balance in Supabase
+      const { error } = await supabase.from('user_stats').upsert([
+        {
+          user_id: user.id,
+          coins: {
+            // Use a function to ensure we're incrementing the existing value
+            ['+']: reward,
+          },
+        },
+      ], { onConflict: 'user_id' });
+
+      if (error) {
+        console.error('Error claiming reward:', error);
+        toast({
+          title: "Error",
+          description: "Failed to claim reward",
+          variant: "destructive"
         });
-    }
-  };
-
-  const handleTap = () => {
-    incrementTaps();
-    toast({
-      title: "PRAY Mined!",
-      description: `You earned ${data.miningPower} PRAY tokens`,
-    });
-  };
-
-  const handleClaimDailyReward = () => {
-    const claimed = claimDailyReward();
-    if (claimed) {
-      toast({
-        title: "Daily Reward Claimed!",
-        description: "You earned 5 PRAY tokens.",
-      });
-    } else {
-      toast({
-        title: "Already Claimed",
-        description: "You've already claimed your daily reward today.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleClaimAchievement = () => {
-    if (isEligible) {
-      updateCoins(50);
-      
-      toast({
-        title: "Achievement Reward Claimed!",
-        description: "You earned 50 PRAY tokens for inviting 3 friends!",
-      });
-      
-      // Mark achievement as claimed in Supabase
-      if (user) {
-        supabase.from('user_achievements')
-          .upsert({
-            user_id: user.id,
-            achievement_id: 'referral_milestone',
-            claimed_at: new Date().toISOString()
-          })
-          .then(({ error }) => {
-            if (error) {
-              console.error('Error recording achievement claim:', error);
-            }
-          });
+        // Revert the UI update if the Supabase update fails
+        setIsCompleted(prev => ({ ...prev, [achievementId]: false }));
+      } else {
+        toast({
+          title: "Reward Claimed!",
+          description: `You have claimed ${reward} coins.`,
+        });
       }
-    } else {
+    } catch (err) {
+      console.error('Error in handleClaimReward:', err);
       toast({
-        title: "Not Eligible",
-        description: "You need to invite 3 friends first.",
-        variant: "destructive",
+        title: "Error",
+        description: "Failed to claim reward",
+        variant: "destructive"
       });
+      // Revert the UI update if an error occurs
+      setIsCompleted(prev => ({ ...prev, [achievementId]: false }));
     }
   };
 
   return (
-    <AppLayout title="Earn">
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Coin Tapper Card */}
-        <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <Zap className="h-5 w-5 text-yellow-400" />
-              Praybit Tapper
-            </CardTitle>
-            <CardDescription>Tap to earn PRAY tokens</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <CoinTapper 
-              onTap={handleTap} 
-              coins={data.coins || 0} 
-              coinsPerTap={data.miningPower || 1} 
-            />
-          </CardContent>
-        </Card>
+    <AppLayout title="Earn Rewards">
+      <div className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold mb-4">Earn Rewards</h1>
+        <p className="text-blue-200 mb-6">Complete tasks and achievements to earn PRAY tokens!</p>
 
-        {/* Referral System Card */}
-        <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <Users className="h-5 w-5 text-green-400" />
-              Referral Program
-            </CardTitle>
-            <CardDescription>Invite friends and earn rewards</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {user ? (
-              <ReferralSystem onRefer={handleRefer} referralCount={referralCount} />
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-sm text-blue-300">Sign in to generate your referral link</p>
-                <ConnectWalletButton variant="outline" />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Daily Rewards Card */}
-        <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <CalendarDays className="h-5 w-5 text-sky-400" />
-              Daily Rewards
-            </CardTitle>
-            <CardDescription>Claim your daily PRAY tokens</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 flex flex-col items-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-sky-600 rounded-full flex items-center justify-center">
-              <span className="text-xl font-bold text-white">+5</span>
-            </div>
-            <p className="text-sm text-blue-200">
-              Come back every day to claim free PRAY tokens!
-            </p>
-            <Button onClick={handleClaimDailyReward} className="w-full">Claim Daily Reward</Button>
-          </CardContent>
-        </Card>
-
-        {/* Staking Rewards Card */}
-        <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <CircleDollarSign className="h-5 w-5 text-emerald-400" />
-              Staking Rewards
-            </CardTitle>
-            <CardDescription>Stake PRAY and earn passive income</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-blue-200">
-              Stake your PRAY tokens to earn rewards. The more you stake, the more you earn!
-            </p>
-            <p className="text-sm text-yellow-300">Coming soon! Staking will be available after token launch.</p>
-            <Button disabled>Stake PRAY</Button>
-          </CardContent>
-        </Card>
-
-        {/* Achievement Rewards Card */}
-        <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <Award className="h-5 w-5 text-orange-400" />
-              Achievement Rewards
-            </CardTitle>
-            <CardDescription>Complete tasks and earn rewards</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <h4 className="text-lg font-semibold text-blue-100">Referral Milestone</h4>
-              <p className="text-sm text-blue-200">Invite 3 friends to Praybit and unlock a special reward!</p>
-              <Progress value={progress} />
-              <p className="text-xs text-blue-300">{referralCount} / 3 Friends Invited</p>
-            </div>
-
-            {isEligible ? (
-              <Button 
-                onClick={handleClaimAchievement}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-medium"
-              >
-                Claim 50 PRAY Reward
-              </Button>
-            ) : (
-              <Button variant="secondary" disabled={true}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Checking...
-                  </>
-                ) : (
-                  "Invite 3 Friends to Claim"
-                )}
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Leaderboard Card */}
-        <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-yellow-500" />
-              Leaderboard
-            </CardTitle>
-            <CardDescription>Top PRAY earners</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-blue-200">See who's earning the most PRAY and compete for the top spot!</p>
-            <ol className="list-decimal list-inside pl-4 mt-2 text-blue-300">
-              {leaderboard.length > 0 ? (
-                leaderboard.map((entry: any, index) => (
-                  <li key={entry.user_id} className={user && entry.user_id === user.id ? "text-yellow-300" : ""}>
-                    User {index + 1} - {entry.coins} PRAY {user && entry.user_id === user.id ? "(You)" : ""}
-                  </li>
-                ))
-              ) : (
-                <>
-                  <li>User 1 - 10000 PRAY</li>
-                  <li>User 2 - 8000 PRAY</li>
-                  <li>User 3 - 6000 PRAY</li>
-                </>
-              )}
-              {user && !leaderboard.some((entry: any) => entry.user_id === user.id) && (
-                <li className="text-yellow-300">You - {data.coins} PRAY</li>
-              )}
-            </ol>
-          </CardContent>
-          <CardFooter>
-            <Button variant="outline" className="w-full">View Full Leaderboard</Button>
-          </CardFooter>
-        </Card>
+        {isLoading ? (
+          <p className="text-center text-blue-300">Loading achievements...</p>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {achievements.map((achievement) => (
+              <Card key={achievement.id} className="bg-blue-800 border-blue-700">
+                <CardHeader>
+                  <CardTitle className="text-xl">{achievement.title}</CardTitle>
+                  <CardDescription>{achievement.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-blue-200">Reward: {achievement.reward} PRAY</span>
+                    {isCompleted[achievement.id] ? (
+                      <CheckCircle2 className="text-green-500 h-5 w-5" />
+                    ) : (
+                      <XCircle className="text-red-500 h-5 w-5" />
+                    )}
+                  </div>
+                  {!isCompleted[achievement.id] ? (
+                    <Button onClick={() => handleClaimReward(achievement.id, achievement.reward)} variant="outline" className="w-full border-yellow-500 text-yellow-400 hover:bg-yellow-500 hover:text-black">
+                      Claim Reward
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" className="w-full" disabled>
+                      Claimed
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
-
-      <Stats 
-        coins={data.coins || 0} 
-        tapsCount={data.tapsCount || 0} 
-        referrals={referralCount || 0} 
-      />
     </AppLayout>
   );
 };
