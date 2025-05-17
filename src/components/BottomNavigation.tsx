@@ -1,6 +1,6 @@
 
 import { Link, useLocation } from 'react-router-dom';
-import { Home, CircleDollarSign, User, Share2, Link2, Shield } from 'lucide-react';
+import { Home, CircleDollarSign, User, Share2, Link2 } from 'lucide-react';
 import { useSupabase } from '@/contexts/SupabaseContext';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
