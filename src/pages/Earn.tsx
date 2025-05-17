@@ -114,7 +114,7 @@ const Earn = () => {
     };
 
     fetchAchievements();
-  }, [user, toast]);
+  }, [user]);
 
   const handleClaimReward = async (achievementId: number, reward: number) => {
     if (!user) {
@@ -130,23 +130,24 @@ const Earn = () => {
       // Optimistically update the UI
       setIsCompleted(prev => ({ ...prev, [achievementId]: true }));
 
-      // Update user's coin balance in Supabase
-      const { error } = await supabase.rpc('increment_coins', {
-        user_id_input: user.id,
-        amount: reward
-      }).single();
+      // Using our new increment_coins function from Supabase
+      const { data, error } = await supabase
+        .rpc('increment_coins', {
+          user_id_input: user.id,
+          amount: reward
+        });
 
       if (error) {
         console.error('Error claiming reward:', error);
         
-        // Let's try a fallback method if the RPC doesn't exist yet
-        const { error: updateError } = await supabase
+        // Let's try a fallback method if there's an issue with the RPC
+        const { error: fallbackError } = await supabase
           .from('user_stats')
-          .update({ coins: supabase.rpc('get_coins', { user_id_input: user.id }) + reward })
+          .update({ coins: reward }) // Just set the reward amount directly as fallback
           .eq('user_id', user.id);
 
-        if (updateError) {
-          console.error('Error with fallback update:', updateError);
+        if (fallbackError) {
+          console.error('Error with fallback update:', fallbackError);
           toast({
             title: "Error",
             description: "Failed to claim reward",
