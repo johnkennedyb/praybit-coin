@@ -1,17 +1,28 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Coins, Zap, Sparkles } from "lucide-react";
+import { Coins, Zap, Sparkles, Check } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface CoinTapperProps {
   onTap: () => void;
   coins: number;
   coinsPerTap: number;
+  isSyncing?: boolean;
 }
 
-const CoinTapper = ({ onTap, coins, coinsPerTap }: CoinTapperProps) => {
+const CoinTapper = ({ onTap, coins, coinsPerTap, isSyncing = false }: CoinTapperProps) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
+  const [showSyncBadge, setShowSyncBadge] = useState(false);
+  
+  useEffect(() => {
+    if (isSyncing) {
+      setShowSyncBadge(true);
+      const timeout = setTimeout(() => setShowSyncBadge(false), 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isSyncing]);
   
   const handleTap = () => {
     setIsAnimating(true);
@@ -42,6 +53,11 @@ const CoinTapper = ({ onTap, coins, coinsPerTap }: CoinTapperProps) => {
         <div className="mt-2 px-3 py-1 bg-indigo-600/30 rounded-full text-xs text-indigo-400 font-medium border border-indigo-500/30 flex items-center gap-1">
           <Sparkles className="h-3 w-3 text-yellow-400" />
           <span>ERC-20 Token</span>
+          {showSyncBadge && (
+            <Badge variant="outline" className="ml-2 bg-green-600/20 text-green-400 text-xs border-green-500/20 flex items-center gap-1 px-1.5 animate-pulse">
+              <Check className="h-2.5 w-2.5" /> Synced
+            </Badge>
+          )}
         </div>
       </div>
       

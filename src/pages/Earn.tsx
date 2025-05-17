@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWeb3 } from '@/contexts/Web3Context';
@@ -25,62 +24,74 @@ import {
   CircleDollarSign,
   Sparkles,
   ArrowRight,
-  BadgePercent
+  BadgePercent,
+  Gift,
+  Clock,
+  AlertTriangle
 } from "lucide-react";
 
-// Define a type for achievements
-interface Achievement {
+// Define tasks for users to complete
+interface Task {
   id: number;
   title: string;
   description: string;
   reward: number;
+  completedKey?: string; // Property in user data to check if task is completed
+  verificationFn?: (data: any) => boolean; // Function to verify task completion
 }
 
 const Earn = () => {
   const navigate = useNavigate();
   const { account } = useWeb3();
   const { user } = useSupabase();
-  const { data: prayData, updateCoins, incrementTaps, claimDailyReward } = usePrayData();
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [isCompleted, setIsCompleted] = useState<{[key: number]: boolean}>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: prayData, updateCoins, incrementTaps, claimDailyReward, completeTask } = usePrayData();
   const [referralCode, setReferralCode] = useState<string | null>(null);
   const [referralLink, setReferralLink] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [referralCount, setReferralCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [completedTasks, setCompletedTasks] = useState<{[key: number]: boolean}>({});
+  
+  // Define tasks
+  const tasks: Task[] = [
+    {
+      id: 1,
+      title: "Daily Login",
+      description: "Log in to the app today",
+      reward: 5,
+      verificationFn: (data) => Boolean(data.lastDailyReward === new Date().toISOString().split('T')[0])
+    },
+    {
+      id: 2,
+      title: "Tap 50 Times",
+      description: "Mine PRAY coins by tapping 50 times",
+      reward: 10,
+      verificationFn: (data) => data.tapsCount >= 50
+    },
+    {
+      id: 3,
+      title: "Refer a Friend",
+      description: "Invite a friend to join Praybit",
+      reward: 20,
+      verificationFn: (data) => data.referrals > 0
+    },
+    {
+      id: 4,
+      title: "Accumulate 100 PRAY",
+      description: "Collect a total of 100 PRAY coins",
+      reward: 25,
+      verificationFn: (data) => data.coins >= 100
+    }
+  ];
   
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Define achievements
-        const defaultAchievements: Achievement[] = [
-          { 
-            id: 1, 
-            title: "Tap Master", 
-            description: "Tap 100 times to earn coins", 
-            reward: 50 
-          },
-          { 
-            id: 2, 
-            title: "Social Butterfly", 
-            description: "Refer a friend to earn coins", 
-            reward: 100 
-          },
-          { 
-            id: 3, 
-            title: "Coin Collector", 
-            description: "Accumulate 1000 PRAY coins", 
-            reward: 200 
-          }
-        ];
-        
-        setAchievements(defaultAchievements);
-        
         if (user) {
           const userId = user.id;
           
-          // Get user stats to check achievements
+          // Get user stats
           const { data: userStats, error: statsError } = await supabase
             .from("user_stats")
             .select("*")
@@ -88,40 +99,18 @@ const Earn = () => {
             .single();
           
           if (statsError && statsError.code !== 'PGRST116') {
-            console.error('Error fetching user achievements:', statsError);
+            console.error('Error fetching user stats:', statsError);
             toast({
               title: "Error",
-              description: "Failed to load user achievements",
+              description: "Failed to load user data",
               variant: "destructive"
             });
             return;
           }
           
-          // Initialize isCompleted based on userStats
+          // Update referral count
           if (userStats) {
-            const completed: { [key: number]: boolean } = {};
             setReferralCount(userStats.referrals || 0);
-            
-            defaultAchievements.forEach(achievement => {
-              if (achievement.id === 1) {
-                completed[achievement.id] = userStats.taps_count >= 100;
-              } else if (achievement.id === 2) {
-                completed[achievement.id] = userStats.referrals >= 1;
-              } else if (achievement.id === 3) {
-                completed[achievement.id] = userStats.coins >= 1000;
-              } else {
-                completed[achievement.id] = false;
-              }
-            });
-            
-            setIsCompleted(completed);
-          } else {
-            // If no user stats, initialize all achievements as not completed
-            const initialCompleted: { [key: number]: boolean } = {};
-            defaultAchievements.forEach(achievement => {
-              initialCompleted[achievement.id] = false;
-            });
-            setIsCompleted(initialCompleted);
           }
           
           // Fetch referral code if it exists
@@ -135,9 +124,22 @@ const Earn = () => {
             setReferralCode(existingReferrals[0].code);
             setReferralLink(`https://coin.praybit.com?ref=${existingReferrals[0].code}`);
           }
+          
+          // Check task completion
+          const completed: {[key: number]: boolean} = {};
+          tasks.forEach(task => {
+            if (task.verificationFn) {
+              completed[task.id] = task.verificationFn(prayData);
+            } else if (task.completedKey && prayData[task.completedKey as keyof typeof prayData]) {
+              completed[task.id] = true;
+            } else {
+              completed[task.id] = false;
+            }
+          });
+          setCompletedTasks(completed);
         }
       } catch (err) {
-        console.error('Error in fetchData:', err);
+        console.error('Error fetching data:', err);
         toast({
           title: "Error",
           description: "Failed to load data",
@@ -149,9 +151,9 @@ const Earn = () => {
     };
 
     fetchData();
-  }, [user]);
+  }, [user, prayData]);
 
-  const handleClaimReward = async (achievementId: number, reward: number) => {
+  const handleClaimTaskReward = async (taskId: number, reward: number) => {
     if (!user) {
       toast({
         title: "Authentication required",
@@ -160,54 +162,55 @@ const Earn = () => {
       });
       return;
     }
+    
+    // Check if task is completed
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    let isCompleted = false;
+    
+    if (task.verificationFn) {
+      isCompleted = task.verificationFn(prayData);
+    } else if (task.completedKey) {
+      isCompleted = Boolean(prayData[task.completedKey as keyof typeof prayData]);
+    }
+    
+    if (!isCompleted) {
+      toast({
+        title: "Task not completed",
+        description: "Complete the task before claiming the reward",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // If already claimed, prevent double claim
+    if (completedTasks[taskId]) {
+      toast({
+        title: "Already claimed",
+        description: "You've already claimed this reward",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
-      // Optimistically update the UI
-      setIsCompleted(prev => ({ ...prev, [achievementId]: true }));
-
-      // Using our new increment_coins function from Supabase
-      const { data, error } = await supabase
-        .rpc('increment_coins', {
-          user_id_input: user.id,
-          amount: reward
-        });
-
-      if (error) {
-        console.error('Error claiming reward:', error);
-        
-        // Let's try a fallback method if there's an issue with the RPC
-        const { error: fallbackError } = await supabase
-          .from('user_stats')
-          .update({ coins: reward }) // Just set the reward amount directly as fallback
-          .eq('user_id', user.id);
-
-        if (fallbackError) {
-          console.error('Error with fallback update:', fallbackError);
-          toast({
-            title: "Error",
-            description: "Failed to claim reward",
-            variant: "destructive"
-          });
-          // Revert the UI update if both methods fail
-          setIsCompleted(prev => ({ ...prev, [achievementId]: false }));
-          return;
-        }
-      }
-
-      toast({
-        title: "Reward Claimed!",
-        description: `You have claimed ${reward} coins.`,
-      });
+      const success = completeTask(taskId, reward);
       
+      if (success) {
+        // Mark as completed locally
+        setCompletedTasks(prev => ({
+          ...prev,
+          [taskId]: true
+        }));
+      }
     } catch (err) {
-      console.error('Error in handleClaimReward:', err);
+      console.error('Error claiming task reward:', err);
       toast({
         title: "Error",
         description: "Failed to claim reward",
         variant: "destructive"
       });
-      // Revert the UI update if an error occurs
-      setIsCompleted(prev => ({ ...prev, [achievementId]: false }));
     }
   };
 
@@ -295,6 +298,87 @@ const Earn = () => {
   return (
     <AppLayout title="Earn Rewards">
       <div className="container mx-auto py-6">
+        <div className="mb-6">
+          <div className="bg-yellow-400/10 border border-yellow-400/20 p-3 rounded-lg flex items-center gap-3">
+            <AlertTriangle className="text-yellow-400 h-5 w-5 shrink-0" />
+            <p className="text-sm text-yellow-200">
+              <span className="font-medium">PRAY Token Status:</span> Pre-launch phase. The token is not yet listed on exchanges.
+            </p>
+          </div>
+        </div>
+        
+        {/* Tasks and Achievements Section */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Gift className="h-5 w-5 text-yellow-400" />
+            Daily Tasks
+          </h2>
+          
+          <div className="grid gap-4 md:grid-cols-2">
+            {tasks.map(task => {
+              const isCompleted = task.verificationFn ? task.verificationFn(prayData) : false;
+              const isClaimed = completedTasks[task.id] || false;
+              
+              return (
+                <Card key={task.id} className="bg-blue-800/80 border-blue-700 shadow-lg">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center ${isCompleted ? 'bg-green-500' : 'bg-blue-900'}`}>
+                        {isCompleted ? (
+                          <CheckCircle2 className="h-4 w-4 text-white" />
+                        ) : (
+                          <Clock className="h-4 w-4 text-blue-300" />
+                        )}
+                      </div>
+                      {task.title}
+                    </CardTitle>
+                    <CardDescription>{task.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs text-blue-300">
+                        {isCompleted ? 'Completed' : 'In Progress'}
+                      </span>
+                      <span className="text-yellow-400 font-semibold">
+                        +{task.reward} PRAY
+                      </span>
+                    </div>
+                    
+                    <Progress 
+                      value={isCompleted ? 100 : 0} 
+                      className="h-2 mb-3" 
+                      indicatorClassName={isCompleted ? "bg-green-500" : ""} 
+                    />
+                    
+                    <Button 
+                      variant="outline" 
+                      className={`w-full ${isCompleted && !isClaimed 
+                        ? 'border-yellow-500 text-yellow-400 hover:bg-yellow-500/20'
+                        : isCompleted && isClaimed
+                        ? 'bg-green-600 hover:bg-green-700 text-white border-green-700'
+                        : 'border-blue-600 text-blue-400 hover:bg-blue-800'}`}
+                      disabled={!isCompleted || isClaimed}
+                      onClick={() => handleClaimTaskReward(task.id, task.reward)}
+                    >
+                      {isClaimed ? (
+                        <>
+                          <Check className="mr-1 h-4 w-4" />
+                          Claimed
+                        </>
+                      ) : isCompleted ? (
+                        'Claim Reward'
+                      ) : (
+                        'Complete Task'
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      
+        {/* Other earning methods */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Praybit Tapper Card */}
           <Card className="bg-blue-800/80 border-blue-700">
@@ -349,7 +433,7 @@ const Earn = () => {
               {!referralCode ? (
                 <Button 
                   variant="outline" 
-                  className="border-yellow-500 text-yellow-400 hover:bg-yellow-500 hover:text-black w-full"
+                  className="border-yellow-500 text-yellow-400 hover:bg-yellow-500/20 w-full"
                   onClick={generateReferralCode}
                 >
                   <Users className="mr-2 h-4 w-4" />

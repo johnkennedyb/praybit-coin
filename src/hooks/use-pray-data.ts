@@ -27,6 +27,7 @@ export function usePrayData() {
     const savedData = localStorage.getItem('praybitData');
     return savedData ? JSON.parse(savedData) : defaultData;
   });
+  const [isInitialized, setIsInitialized] = useState(false);
   
   // Load data from Supabase when user is authenticated
   useEffect(() => {
@@ -34,7 +35,6 @@ export function usePrayData() {
       const fetchUserData = async () => {
         try {
           // Check if user has existing data in Supabase
-          // Using explicit types to avoid TypeScript errors
           const { data: userData, error } = await supabase
             .from('user_stats')
             .select('*')
@@ -67,6 +67,9 @@ export function usePrayData() {
                 referrals: localData.referrals,
                 last_daily_reward: localData.lastDailyReward
               });
+              
+              // Set our data to match what we just saved
+              setData(localData);
             } catch (insertError) {
               console.error('Error inserting user stats:', insertError);
               toast({
@@ -76,21 +79,29 @@ export function usePrayData() {
               });
             }
           }
+          setIsInitialized(true);
         } catch (err) {
           console.error('Error in fetchUserData:', err);
+          setIsInitialized(true);
         }
       };
       
       fetchUserData();
+    } else {
+      // No user logged in, we can use the local data
+      setIsInitialized(true);
     }
   }, [user, toast]);
   
+  // Save data to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('praybitData', JSON.stringify(data));
   }, [data]);
   
   // Calculate and update mining power based on taps
   useEffect(() => {
+    if (!isInitialized) return;
+    
     const miningPower = Math.floor(1 + (data.tapsCount / 100));
     if (miningPower !== data.miningPower) {
       setData(prev => ({
@@ -98,21 +109,22 @@ export function usePrayData() {
         miningPower
       }));
     }
-  }, [data.tapsCount, data.miningPower]);
+  }, [data.tapsCount, data.miningPower, isInitialized]);
   
   // Sync data with Supabase when it changes and user is logged in
   useEffect(() => {
+    if (!user || !isInitialized) return;
+    
     const updateSupabaseData = async () => {
-      if (!user) return;
-      
       try {
+        console.log('Syncing data with Supabase:', data);
         await supabase.from('user_stats').upsert({
           user_id: user.id,
           coins: data.coins,
           taps_count: data.tapsCount,
           referrals: data.referrals,
           last_daily_reward: data.lastDailyReward
-        });
+        }, { onConflict: 'user_id' });
       } catch (err) {
         console.error('Error updating Supabase data:', err);
       }
@@ -121,7 +133,7 @@ export function usePrayData() {
     // Debounce the updates to avoid too many API calls
     const timeoutId = setTimeout(updateSupabaseData, 1000);
     return () => clearTimeout(timeoutId);
-  }, [data, user]);
+  }, [data, user, isInitialized]);
   
   const updateCoins = (amount: number) => {
     setData(prev => ({
@@ -165,6 +177,18 @@ export function usePrayData() {
     return true; // Successfully claimed
   };
   
+  const completeTask = (taskId: number, reward: number) => {
+    updateCoins(reward);
+    
+    toast({
+      title: "Task Completed!",
+      description: `You earned ${reward} PRAY tokens`,
+    });
+    
+    // We could also save completed tasks in Supabase if needed
+    return true;
+  };
+  
   const resetData = () => {
     setData(defaultData);
     localStorage.removeItem('praybitData');
@@ -178,7 +202,7 @@ export function usePrayData() {
           taps_count: 0,
           referrals: 0,
           last_daily_reward: null
-        });
+        }, { onConflict: 'user_id' });
       } catch (error) {
         console.error('Error resetting user stats:', error);
       }
@@ -187,10 +211,12 @@ export function usePrayData() {
   
   return {
     data,
+    isInitialized,
     updateCoins,
     incrementTaps,
     incrementReferrals,
     claimDailyReward,
+    completeTask,
     resetData,
   };
 }
