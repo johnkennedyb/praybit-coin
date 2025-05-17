@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSupabase } from "@/contexts/SupabaseContext";
@@ -113,7 +112,7 @@ const AdminPage = () => {
 
   const calculateTotalTokens = async () => {
     try {
-      // Get the sum of all coins from user_stats
+      // Using a direct SQL query instead of RPC since the function is not in the types
       const { data, error } = await supabase
         .from('user_stats')
         .select('coins');
@@ -121,8 +120,12 @@ const AdminPage = () => {
       if (error) throw error;
       
       // Calculate the total coins
-      const total = data?.reduce((sum, row) => sum + (row.coins || 0), 0) || 0;
-      setTotalTokens(total);
+      if (data && data.length > 0) {
+        const total = data.reduce((sum, row) => sum + (row.coins || 0), 0);
+        setTotalTokens(total);
+      } else {
+        setTotalTokens(0);
+      }
     } catch (error) {
       console.error("Error calculating total tokens:", error);
       // Fallback calculation
