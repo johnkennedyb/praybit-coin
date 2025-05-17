@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Coins, Zap, Sparkles, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CoinTapperProps {
   onTap: () => void;
@@ -16,7 +15,6 @@ const CoinTapper = ({ onTap, coins, coinsPerTap, isSyncing = false }: CoinTapper
   const [isAnimating, setIsAnimating] = useState(false);
   const [showParticles, setShowParticles] = useState(false);
   const [showSyncBadge, setShowSyncBadge] = useState(false);
-  const isMobile = useIsMobile();
   
   useEffect(() => {
     if (isSyncing) {
@@ -44,9 +42,9 @@ const CoinTapper = ({ onTap, coins, coinsPerTap, isSyncing = false }: CoinTapper
   };
   
   return (
-    <div className="flex flex-col items-center justify-center w-full gap-6 py-4 md:py-8">
+    <div className="flex flex-col items-center justify-center w-full gap-6 py-8">
       <div className="flex flex-col items-center">
-        <div className="text-3xl md:text-6xl font-bold bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent animate-pulse">
+        <div className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent animate-pulse">
           {formatNumber(coins)} <span className="text-base text-yellow-200">PRAY</span>
         </div>
         <div className="text-sm text-indigo-300 mt-1">
@@ -65,11 +63,11 @@ const CoinTapper = ({ onTap, coins, coinsPerTap, isSyncing = false }: CoinTapper
       
       <div className="relative flex justify-center w-full">
         <Button 
-          className={`h-24 w-24 md:h-32 md:w-32 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 hover:from-amber-300 hover:via-yellow-400 hover:to-amber-500 shadow-lg shadow-amber-600/30 transition-all ${isAnimating ? 'scale-95' : 'scale-100'}`}
+          className={`h-32 w-32 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 hover:from-amber-300 hover:via-yellow-400 hover:to-amber-500 shadow-lg shadow-amber-600/30 transition-all ${isAnimating ? 'scale-95' : 'scale-100'}`}
           size="lg"
           onClick={handleTap}
         >
-          <Coins className={`h-12 w-12 md:h-16 md:w-16 text-white drop-shadow-md`} />
+          <Coins className="h-16 w-16 text-white drop-shadow-md" />
         </Button>
         
         {/* Particle effects */}
@@ -82,7 +80,7 @@ const CoinTapper = ({ onTap, coins, coinsPerTap, isSyncing = false }: CoinTapper
                 style={{
                   top: '50%',
                   left: '50%',
-                  transform: `translate(-50%, -50%) rotate(${i * 45}deg) translateY(${isMobile ? -40 : -60}px)`,
+                  transform: `translate(-50%, -50%) rotate(${i * 45}deg) translateY(-60px)`,
                   animation: `fadeOutUp 1s ease-out ${i * 0.1}s`
                 }}
               />

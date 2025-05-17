@@ -1,318 +1,408 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { 
+  Wallet, 
+  User, 
+  Mail, 
+  Lock, 
+  Copy,
+  Check,
+  ExternalLink,
+  Shield,
+  Key,
+  ChevronRight,
+  Settings,
+  Send,
+  Loader2
+} from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useWeb3 } from "@/contexts/Web3Context";
 import { useSupabase } from "@/contexts/SupabaseContext";
-import { supabase } from "@/integrations/supabase/client";
-import { Coins, UserIcon, LogOut, Settings, Check, Copy, Loader2, Plus, ExternalLink } from "lucide-react";
-import CoinScene from "@/components/CoinScene";
-import { usePrayData } from "@/hooks/use-pray-data";
+import ConnectWalletButton from "@/components/ConnectWalletButton";
 import TransferModal from "@/components/TransferModal";
 
-interface UserProfile {
-  username: string;
-  bio: string;
-}
-
 const Profile = () => {
-  const { user, signOut } = useSupabase();
-  const { data: prayData } = usePrayData();
+  const { account, praybitBalance, ethBalance } = useWeb3();
+  const { user, signIn, signUp, signOut, loading } = useSupabase();
+  const [copied, setCopied] = useState(false);
+  const [showTransferModal, setShowTransferModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [profile, setProfile] = useState<UserProfile>({
-    username: '',
-    bio: ''
+  
+  // Login form state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  
+  // Register form state
+  const [registerForm, setRegisterForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
   });
-  const [editMode, setEditMode] = useState(false);
-  const [editedProfile, setEditedProfile] = useState<UserProfile>({
-    username: '',
-    bio: ''
-  });
-  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
-
-  // For demo purpose, let's simulate profile data without actual database table
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (!user) return;
-
-      setIsLoading(true);
-      try {
-        // Simulate profile data since we don't have a profiles table yet
-        const username = user.email?.split('@')[0] || 'anonymous';
-        const simulatedProfile = {
-          username,
-          bio: `Hello, I'm ${username}! I'm excited about PRAY tokens.`
-        };
-        
-        setProfile(simulatedProfile);
-        setEditedProfile(simulatedProfile);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserProfile();
-  }, [user]);
-
-  const handleSaveProfile = async () => {
-    if (!user) return;
-    
+  
+  const [showLoginForm, setShowLoginForm] = useState(true);
+  
+  const copyWalletAddress = () => {
+    if (account) {
+      navigator.clipboard.writeText(account);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+  
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
+    
     try {
-      // Simulate saving profile data
-      // In a real app, this would update a profiles table
-      setProfile(editedProfile);
-      setEditMode(false);
-      
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated.",
-      });
+      await signIn(email, password);
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast({
-        title: "Update Failed",
-        description: "There was an error updating your profile.",
-        variant: "destructive",
-      });
+      // Error is already handled in the context
     } finally {
       setIsLoading(false);
     }
   };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setEditedProfile(prev => ({ ...prev, [name]: value }));
+  
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    if (registerForm.password !== registerForm.confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      await signUp(registerForm.email, registerForm.password, {
+        name: registerForm.name,
+      });
+      
+      // Auto switch to login form after successful registration
+      setShowLoginForm(true);
+    } catch (error) {
+      // Error is already handled in the context
+    } finally {
+      setIsLoading(false);
+    }
   };
-
+  
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast({
-        title: "Signed Out",
-        description: "You have been successfully signed out.",
-      });
     } catch (error) {
-      console.error('Error signing out:', error);
-      toast({
-        title: "Sign Out Failed",
-        description: "There was an error signing out.",
-        variant: "destructive",
-      });
+      // Error is already handled in the context
+    }
+  };
+  
+  const toggleForm = () => {
+    setShowLoginForm(!showLoginForm);
+  };
+  
+  const handleRegisterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setRegisterForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Function to view wallet on block explorer
+  const viewOnExplorer = () => {
+    if (account) {
+      window.open(`https://etherscan.io/address/${account}`, '_blank');
     }
   };
 
-  // Non-authenticated view
-  if (!user) {
-    return (
-      <AppLayout title="Profile">
-        <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
-          <Card className="w-full max-w-md bg-blue-800/50 border-blue-700/60 backdrop-blur-md shadow-xl">
-            <CardHeader className="text-center">
-              <CardTitle>Sign In Required</CardTitle>
-              <CardDescription>
-                Please sign in to view and manage your profile.
-              </CardDescription>
-            </CardHeader>
-            <CardFooter className="flex justify-center">
-              <Button 
-                className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-indigo-900 font-medium"
-                onClick={() => {
-                  // Open login dialog logic would go here
-                  // For now, just show a toast
-                  toast({
-                    title: "Authentication",
-                    description: "Authentication dialog would open here.",
-                  });
-                }}
-              >
-                Sign In
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-      </AppLayout>
-    );
-  }
-
   return (
     <AppLayout title="Profile">
-      <div className="space-y-6 pb-16 pt-4">
-        {/* Profile Card */}
-        <Card className="bg-blue-800/50 border-blue-700/60 backdrop-blur-md shadow-xl overflow-hidden">
-          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 pt-6 pb-8 px-6 flex flex-col items-center">
-            <div className="relative">
-              <Avatar className="h-24 w-24 border-4 border-blue-700">
-                <AvatarImage src={user.user_metadata?.avatar_url || ''} />
-                <AvatarFallback className="bg-blue-700">
-                  <UserIcon className="h-12 w-12" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="absolute bottom-0 right-0">
-                <CoinScene size="small" />
-              </div>
-            </div>
-            <h2 className="mt-4 text-xl font-bold text-white">{profile.username}</h2>
-            <p className="text-blue-200 text-sm">{user.email}</p>
-          </div>
-          
-          <CardContent className="pt-6 pb-4 px-6">
-            {editMode ? (
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm text-blue-300 mb-1 block">Username</label>
-                  <Input 
-                    name="username"
-                    value={editedProfile.username}
-                    onChange={handleInputChange}
-                    className="bg-blue-900/30 border-blue-700"
-                  />
-                </div>
-                
-                <div>
-                  <label className="text-sm text-blue-300 mb-1 block">Bio</label>
-                  <Textarea 
-                    name="bio"
-                    value={editedProfile.bio}
-                    onChange={handleInputChange}
-                    className="bg-blue-900/30 border-blue-700"
-                    rows={4}
-                  />
-                </div>
-                
-                <div className="flex gap-2">
+      <div className="space-y-6">
+        {!user ? (
+          <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                {showLoginForm ? "Login to Your Account" : "Create an Account"}
+              </CardTitle>
+              <CardDescription>
+                {showLoginForm 
+                  ? "Access your Praybit wallet and earn rewards" 
+                  : "Join Praybit ecosystem and start earning"
+                }
+              </CardDescription>
+            </CardHeader>
+            <CardContent>              
+              {showLoginForm ? (
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-2.5 h-5 w-5 text-blue-300" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="your@email.com"
+                        className="pl-10 bg-blue-900/50 border-blue-700"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-2.5 h-5 w-5 text-blue-300" />
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="••••••••"
+                        className="pl-10 bg-blue-900/50 border-blue-700"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
                   <Button 
-                    onClick={handleSaveProfile}
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium"
                     disabled={isLoading}
-                    className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-indigo-900 font-medium"
                   >
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
+                        Logging in...
                       </>
                     ) : (
-                      "Save Profile"
+                      "Login"
                     )}
                   </Button>
+                </form>
+              ) : (
+                <form onSubmit={handleRegister} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-2.5 h-5 w-5 text-blue-300" />
+                      <Input
+                        id="name"
+                        name="name"
+                        placeholder="Your Name"
+                        className="pl-10 bg-blue-900/50 border-blue-700"
+                        value={registerForm.name}
+                        onChange={handleRegisterChange}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="register-email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-2.5 h-5 w-5 text-blue-300" />
+                      <Input
+                        id="register-email"
+                        name="email"
+                        type="email"
+                        placeholder="your@email.com"
+                        className="pl-10 bg-blue-900/50 border-blue-700"
+                        value={registerForm.email}
+                        onChange={handleRegisterChange}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="register-password">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-2.5 h-5 w-5 text-blue-300" />
+                      <Input
+                        id="register-password"
+                        name="password"
+                        type="password"
+                        placeholder="••••••••"
+                        className="pl-10 bg-blue-900/50 border-blue-700"
+                        value={registerForm.password}
+                        onChange={handleRegisterChange}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirm Password</Label>
+                    <div className="relative">
+                      <Shield className="absolute left-3 top-2.5 h-5 w-5 text-blue-300" />
+                      <Input
+                        id="confirm-password"
+                        name="confirmPassword"
+                        type="password"
+                        placeholder="••••••••"
+                        className="pl-10 bg-blue-900/50 border-blue-700"
+                        value={registerForm.confirmPassword}
+                        onChange={handleRegisterChange}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
                   <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setEditedProfile(profile);
-                      setEditMode(false);
-                    }}
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium"
                     disabled={isLoading}
-                    className="border-blue-700"
                   >
-                    Cancel
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating Account...
+                      </>
+                    ) : (
+                      "Create Account"
+                    )}
                   </Button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="mb-4">
-                  <p className="text-sm text-blue-300 mb-1">Bio</p>
-                  <p>{profile.bio}</p>
-                </div>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setEditMode(true)}
-                  className="border-blue-700"
-                >
-                  Edit Profile
-                </Button>
-              </>
-            )}
-          </CardContent>
-        </Card>
-        
-        {/* Wallet Card */}
-        <Card className="bg-blue-800/50 border-blue-700/60 backdrop-blur-md shadow-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Your Wallet</span>
-              <Badge variant="outline" className="bg-blue-900/40 text-yellow-400 border-yellow-500/30">
-                <Coins className="mr-1 h-3.5 w-3.5" /> 
-                {prayData?.coins.toLocaleString() || 0} PRAY
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          
-          <CardContent className="space-y-4">
-            <div>
-              <label className="text-sm text-blue-300 mb-2 block">Your PRAY Address</label>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 font-mono text-xs bg-blue-900/30 p-2 rounded border border-blue-700 overflow-x-auto">
-                  {user.id || '0x0000000000000000000000000000000000000000'}
-                </code>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="border-blue-700"
-                  onClick={() => {
-                    navigator.clipboard.writeText(user.id || '');
-                    toast({
-                      title: "Address Copied",
-                      description: "Your address has been copied to clipboard.",
-                    });
-                  }}
-                >
-                  <Copy className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            
-            <div className="flex gap-2">
-              <Button 
-                className="flex-1 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-indigo-900 font-medium"
-                onClick={() => setIsTransferModalOpen(true)}
-              >
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Transfer PRAY
+                </form>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button variant="link" onClick={toggleForm} className="w-full text-blue-300">
+                {showLoginForm ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Account Settings Card */}
-        <Card className="bg-blue-800/50 border-blue-700/60 backdrop-blur-md shadow-xl">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Settings className="mr-2 h-5 w-5 text-yellow-400" /> 
-              Account Settings
-            </CardTitle>
-          </CardHeader>
-          
-          <CardContent className="space-y-4">
-            <div className="text-sm text-blue-300">
-              <p>Email: {user.email}</p>
-              <p>Created: {new Date(user.created_at).toLocaleDateString()}</p>
-            </div>
+            </CardFooter>
+          </Card>
+        ) : (
+          <>
+            <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Wallet className="h-5 w-5 text-yellow-400" />
+                    Blockchain Wallet
+                  </div>
+                  <ConnectWalletButton />
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {account ? (
+                  <>
+                    <div className="bg-blue-900/50 p-4 rounded-lg border border-blue-700">
+                      <div className="text-sm text-blue-200 mb-1">Wallet Address</div>
+                      <div className="flex items-center justify-between">
+                        <div className="font-mono text-sm overflow-hidden text-ellipsis">
+                          {account}
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={copyWalletAddress}>
+                          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-blue-900/50 p-4 rounded-lg border border-blue-700">
+                        <div className="text-xs text-blue-200">PRAY Balance</div>
+                        <div className="font-bold text-xl">{praybitBalance} PRAY</div>
+                      </div>
+                      <div className="bg-blue-900/50 p-4 rounded-lg border border-blue-700">
+                        <div className="text-xs text-blue-200">ETH Balance</div>
+                        <div className="font-bold text-xl">{parseFloat(ethBalance).toFixed(4)} ETH</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-3">
+                      <Button 
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-medium"
+                        onClick={viewOnExplorer}
+                      >
+                        View on Explorer
+                        <ExternalLink className="ml-2 h-4 w-4" />
+                      </Button>
+                      
+                      <Button 
+                        className="flex-1 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium"
+                        onClick={() => setShowTransferModal(true)}
+                      >
+                        <Send className="mr-2 h-4 w-4" />
+                        Transfer PRAY
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-8 text-center space-y-4">
+                    <div className="bg-blue-900/30 rounded-full p-4 inline-block mx-auto">
+                      <Wallet className="h-10 w-10 text-yellow-400" />
+                    </div>
+                    <h3 className="text-lg font-medium">Connect Your Wallet</h3>
+                    <p className="text-sm text-blue-200">
+                      Connect your MetaMask wallet to access your PRAY tokens and make transactions
+                    </p>
+                    <div className="pt-2">
+                      <ConnectWalletButton 
+                        variant="default"
+                        className="bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-300 hover:to-amber-400 text-blue-900 font-medium"
+                      />
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
             
-            <Button 
-              variant="outline" 
-              className="border-red-500 text-red-400 hover:bg-red-950/30 hover:text-red-300"
-              onClick={handleSignOut}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+            <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-lg">Account Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 p-0">
+                <Button variant="ghost" className="w-full justify-between px-4 py-3 h-auto">
+                  <div className="flex items-center">
+                    <User className="mr-3 h-5 w-5 text-blue-400" />
+                    <span>Personal Information</span>
+                  </div>
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" className="w-full justify-between px-4 py-3 h-auto">
+                  <div className="flex items-center">
+                    <Key className="mr-3 h-5 w-5 text-blue-400" />
+                    <span>Security Settings</span>
+                  </div>
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" className="w-full justify-between px-4 py-3 h-auto">
+                  <div className="flex items-center">
+                    <Settings className="mr-3 h-5 w-5 text-blue-400" />
+                    <span>Preferences</span>
+                  </div>
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </CardContent>
+              <CardFooter className="pt-4">
+                <Button 
+                  variant="destructive" 
+                  className="w-full"
+                  onClick={handleSignOut}
+                >
+                  Log Out
+                </Button>
+              </CardFooter>
+            </Card>
 
-      <TransferModal 
-        open={isTransferModalOpen}
-        onOpenChange={setIsTransferModalOpen}
-        balance={prayData?.coins || 0}
-      />
+            {/* Transfer Modal */}
+            <TransferModal 
+              isOpen={showTransferModal} 
+              onClose={() => setShowTransferModal(false)} 
+            />
+          </>
+        )}
+      </div>
     </AppLayout>
   );
 };
