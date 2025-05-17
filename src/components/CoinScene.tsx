@@ -1,7 +1,7 @@
 
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Environment, PresentationControls, useProgress, Html } from '@react-three/drei';
+import { OrbitControls, PresentationControls, useProgress, Html } from '@react-three/drei';
 import { Sparkles } from 'lucide-react';
 
 interface CoinSceneProps {
@@ -109,7 +109,6 @@ export default function CoinScene({
             config={{ mass: 2, tension: 500 }}
             snap={{ mass: 4, tension: 300 }}
           >
-            <Environment preset="sunset" />
             <ambientLight intensity={0.8} />
             <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1.5} castShadow />
             <directionalLight position={[-5, 5, 5]} intensity={1.2} castShadow />

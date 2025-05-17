@@ -6,11 +6,11 @@ import { useWeb3 } from "@/contexts/Web3Context";
 import CoinTapper from "@/components/CoinTapper";
 import CoinScene from "@/components/CoinScene";
 import ConnectWalletButton from "@/components/ConnectWalletButton";
-import { supabase } from "@/integrations/supabase/client";
 import { useSupabase } from "@/contexts/SupabaseContext";
 import { usePrayData } from "@/hooks/use-pray-data";
 import { toast } from "@/hooks/use-toast";
 import BottomNavigation from "@/components/BottomNavigation";
+import AppLayout from "@/components/AppLayout";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ const Index = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col">
+    <AppLayout showHeader={false}>
       <CoinScene />
       <header className="px-6 pt-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
@@ -124,8 +124,7 @@ const Index = () => {
           &copy; {new Date().getFullYear()} Praybit. All rights reserved.
         </div>
       </footer>
-      <BottomNavigation />
-    </div>
+    </AppLayout>
   );
 };
 
