@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSupabase } from "@/contexts/SupabaseContext";
 import { usePrayData } from "@/hooks/use-pray-data";
 import { toast } from "@/hooks/use-toast";
+import BottomNavigation from "@/components/BottomNavigation";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ const Index = () => {
               {account ? (
                 <CoinTapper 
                   onTap={handleTap}
-                  coins={data.coins}
+                  coins={data.coins || 0}
                   coinsPerTap={data.miningPower || 1}
                 />
               ) : (
@@ -77,7 +78,7 @@ const Index = () => {
             <h2 className="text-2xl font-semibold text-white">
               Why Choose Praybit?
             </h2>
-            <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
               <div>
                 <TrendingUp className="mx-auto h-10 w-10 text-yellow-400" />
                 <h3 className="mt-4 text-lg font-medium text-white">
@@ -118,11 +119,12 @@ const Index = () => {
           </div>
         </div>
       </main>
-      <footer className="relative mt-16 border-t border-blue-900/50 py-8 px-6 lg:px-8">
+      <footer className="relative mt-16 border-t border-blue-900/50 py-8 px-6 lg:px-8 pb-24">
         <div className="mx-auto max-w-3xl text-center text-sm text-blue-200">
           &copy; {new Date().getFullYear()} Praybit. All rights reserved.
         </div>
       </footer>
+      <BottomNavigation />
     </div>
   );
 };

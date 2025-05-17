@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { CircleDollarSign, Zap, Award, Users, Trophy, CalendarDays, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -106,7 +105,7 @@ const Earn = () => {
           <CardContent>
             <CoinTapper 
               onTap={handleTap} 
-              coins={data.coins} 
+              coins={data.coins || 0} 
               coinsPerTap={data.miningPower || 1} 
             />
           </CardContent>
@@ -241,9 +240,9 @@ const Earn = () => {
       </div>
 
       <Stats 
-        coins={data.coins} 
-        tapsCount={data.tapsCount} 
-        referrals={data.referrals} 
+        coins={data.coins || 0} 
+        tapsCount={data.tapsCount || 0} 
+        referrals={data.referrals || 0} 
       />
     </AppLayout>
   );
