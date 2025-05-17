@@ -1,9 +1,8 @@
 
--- Function to get the total number of coins across all users
 CREATE OR REPLACE FUNCTION public.get_total_coins()
-RETURNS integer
-LANGUAGE plpgsql
-SECURITY DEFINER
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
 AS $function$
 DECLARE
   total_coins INT;
@@ -13,4 +12,4 @@ BEGIN
   
   RETURN total_coins;
 END;
-$function$;
+$function$
