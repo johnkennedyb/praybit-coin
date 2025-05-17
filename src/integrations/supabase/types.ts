@@ -117,6 +117,23 @@ export type Database = {
         Args: { user_id: string }
         Returns: string
       }
+      get_coins: {
+        Args: { user_id_input: string }
+        Returns: number
+      }
+      increment_coins: {
+        Args: { user_id_input: string; amount: number }
+        Returns: {
+          coins: number
+          created_at: string
+          id: string
+          last_daily_reward: string | null
+          referrals: number
+          taps_count: number
+          updated_at: string
+          user_id: string
+        }[]
+      }
       process_referral: {
         Args: { referral_code: string; new_user_id: string }
         Returns: boolean
