@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
   CheckCircle2, 
   XCircle, 
@@ -27,7 +28,10 @@ import {
   BadgePercent,
   Gift,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Medal,
+  Crown,
+  ExternalLink
 } from "lucide-react";
 
 // Define tasks for users to complete
@@ -38,6 +42,13 @@ interface Task {
   reward: number;
   completedKey?: string; // Property in user data to check if task is completed
   verificationFn?: (data: any) => boolean; // Function to verify task completion
+}
+
+interface TopUser {
+  user_id: string;
+  coins: number;
+  rank: number;
+  email?: string;
 }
 
 const Earn = () => {
@@ -51,6 +62,7 @@ const Earn = () => {
   const [referralCount, setReferralCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [completedTasks, setCompletedTasks] = useState<{[key: number]: boolean}>({});
+  const [topUsers, setTopUsers] = useState<TopUser[]>([]);
   
   // Define tasks
   const tasks: Task[] = [
@@ -124,6 +136,17 @@ const Earn = () => {
             setReferralCode(existingReferrals[0].code);
             setReferralLink(`https://coin.praybit.com?ref=${existingReferrals[0].code}`);
           }
+
+          // Count completed referrals
+          const { data: completedReferrals, error: countError } = await supabase
+            .from('referrals')
+            .select('*')
+            .eq('referrer_id', user.id)
+            .eq('status', 'completed');
+
+          if (!countError && completedReferrals) {
+            setReferralCount(completedReferrals.length);
+          }
           
           // Check task completion
           const completed: {[key: number]: boolean} = {};
@@ -138,6 +161,48 @@ const Earn = () => {
           });
           setCompletedTasks(completed);
         }
+
+        // Fetch top 3 users by coins
+        const { data: leaderboardData, error: leaderboardError } = await supabase
+          .from('user_stats')
+          .select('user_id, coins')
+          .order('coins', { ascending: false })
+          .limit(3);
+
+        if (leaderboardError) {
+          console.error('Error fetching leaderboard:', leaderboardError);
+        } else if (leaderboardData) {
+          // Get user emails for display
+          const topUsersWithRank = await Promise.all(
+            leaderboardData.map(async (userData, index) => {
+              let email = `User ${index + 1}`;
+              
+              try {
+                const { data: authUser, error: authError } = await supabase
+                  .from('auth')
+                  .select('email')
+                  .eq('id', userData.user_id)
+                  .single();
+                  
+                if (!authError && authUser && authUser.email) {
+                  // Mask email for privacy
+                  email = authUser.email.replace(/(.{2})(.*)(?=@)/, (_, start, rest) => 
+                    start + '•'.repeat(Math.min(rest.length, 3)));
+                }
+              } catch (e) {
+                console.log('Could not fetch user email');
+              }
+              
+              return {
+                ...userData,
+                email,
+                rank: index + 1
+              };
+            })
+          );
+          
+          setTopUsers(topUsersWithRank);
+        }
       } catch (err) {
         console.error('Error fetching data:', err);
         toast({
@@ -151,7 +216,7 @@ const Earn = () => {
     };
 
     fetchData();
-  }, [user, prayData]);
+  }, [user, prayData, tasks]);
 
   const handleClaimTaskReward = async (taskId: number, reward: number) => {
     if (!user) {
@@ -405,7 +470,10 @@ const Earn = () => {
                 className="h-24 w-24 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 hover:from-amber-300 hover:via-yellow-400 hover:to-amber-500 shadow-lg shadow-amber-600/30 mb-4"
                 onClick={handleTap}
               >
-                <Coins className="h-10 w-10 text-white drop-shadow-md" />
+                <div className="relative flex items-center justify-center">
+                  <Coins className="h-10 w-10 text-white drop-shadow-md" />
+                  <span className="absolute font-extrabold text-3xl text-white">P</span>
+                </div>
               </Button>
               
               <p className="text-center text-sm text-blue-200">
@@ -468,6 +536,7 @@ const Earn = () => {
                       className="h-6 text-xs text-blue-300 hover:text-blue-100 p-1"
                       onClick={() => navigate("/referral")}
                     >
+                      <ExternalLink className="h-3 w-3 mr-1" />
                       Details
                     </Button>
                   </div>
@@ -502,6 +571,94 @@ const Earn = () => {
               >
                 Claim Daily Reward
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Leaderboard Card */}
+          <Card className="bg-blue-800/80 border-blue-700 col-span-full md:col-span-2 lg:col-span-3">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-yellow-400" />
+                Top Players
+              </CardTitle>
+              <CardDescription>The highest PRAY coin earners</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin h-8 w-8 border-4 border-t-transparent border-yellow-400 rounded-full"></div>
+                </div>
+              ) : topUsers.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    {topUsers.map((topUser) => {
+                      const getRankIcon = (rank: number) => {
+                        switch (rank) {
+                          case 1:
+                            return (
+                              <div className="bg-amber-400 text-amber-900 w-8 h-8 rounded-full flex items-center justify-center">
+                                <Crown className="h-5 w-5" />
+                              </div>
+                            );
+                          case 2:
+                            return (
+                              <div className="bg-slate-300 text-slate-700 w-8 h-8 rounded-full flex items-center justify-center">
+                                <Medal className="h-5 w-5" />
+                              </div>
+                            );
+                          case 3:
+                            return (
+                              <div className="bg-amber-700 text-amber-200 w-8 h-8 rounded-full flex items-center justify-center">
+                                <Medal className="h-5 w-5" />
+                              </div>
+                            );
+                          default:
+                            return (
+                              <div className="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center">
+                                {rank}
+                              </div>
+                            );
+                        }
+                      };
+
+                      return (
+                        <Card key={topUser.user_id} className={`bg-gradient-to-b ${
+                          topUser.rank === 1 
+                            ? 'from-amber-500/30 to-amber-700/30 border-amber-500/50' 
+                            : topUser.rank === 2 
+                            ? 'from-slate-500/30 to-slate-700/30 border-slate-400/50'
+                            : 'from-amber-700/30 to-amber-900/30 border-amber-700/50'
+                        } p-4 shadow-lg flex flex-col items-center gap-2`}>
+                          <div className="flex flex-col items-center gap-2">
+                            {getRankIcon(topUser.rank)}
+                            <div className="text-center">
+                              <div className="text-sm font-medium truncate max-w-32">
+                                {topUser.email || `User ${topUser.rank}`}
+                              </div>
+                              <div className="text-lg font-bold text-yellow-400">
+                                {formatNumber(topUser.coins)} PRAY
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                  
+                  {user && topUsers.every(tu => tu.user_id !== user.id) && (
+                    <div className="mt-2 p-3 border border-dashed border-blue-500/40 rounded-md text-center">
+                      <p className="text-sm text-blue-300">
+                        Keep earning to make it to the leaderboard!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Trophy className="h-12 w-12 mx-auto text-blue-500/40 mb-3" />
+                  <p className="text-blue-300">No leaderboard data available yet</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -566,41 +723,6 @@ const Earn = () => {
                 </Button>
               </div>
               
-            </CardContent>
-          </Card>
-
-          {/* Leaderboard Card */}
-          <Card className="bg-blue-800/80 border-blue-700">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-yellow-400" />
-                Leaderboard
-              </CardTitle>
-              <CardDescription>Top PRAY earners</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-blue-200">
-                See who's earning the most PRAY and compete for the top spot!
-              </p>
-              
-              <div className="p-3 bg-blue-900/40 rounded-md border border-blue-700/50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="bg-yellow-400 text-blue-900 w-6 h-6 rounded-full flex items-center justify-center font-bold mr-2">
-                      1
-                    </div>
-                    <span className="text-blue-100">User 1</span>
-                  </div>
-                  <div className="font-medium text-yellow-400">
-                    {formatNumber(prayData?.coins || 0)} PRAY
-                  </div>
-                </div>
-                <div className="text-xs text-blue-300 mt-1 text-right italic">
-                  (You)
-                </div>
-              </div>
-              
-             
             </CardContent>
           </Card>
         </div>

@@ -17,6 +17,7 @@ const ReferralSystem = ({ onRefer, referralCount }: ReferralSystemProps) => {
   const [referralLink, setReferralLink] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [actualReferralCount, setActualReferralCount] = useState(0);
   const { toast } = useToast();
   const { user } = useSupabase();
 
@@ -38,6 +39,19 @@ const ReferralSystem = ({ onRefer, referralCount }: ReferralSystemProps) => {
         if (existingReferrals && existingReferrals.length > 0) {
           setReferralCode(existingReferrals[0].code);
           setReferralLink(`https://coin.praybit.com?ref=${existingReferrals[0].code}`);
+        }
+
+        // Count completed referrals
+        const { data: completedReferrals, error: countError } = await supabase
+          .from('referrals')
+          .select('*')
+          .eq('referrer_id', user.id)
+          .eq('status', 'completed');
+
+        if (countError) throw countError;
+        
+        if (completedReferrals) {
+          setActualReferralCount(completedReferrals.length);
         }
       } catch (error: any) {
         console.error('Error fetching referral code:', error.message);
@@ -152,7 +166,7 @@ const ReferralSystem = ({ onRefer, referralCount }: ReferralSystemProps) => {
       )}
       
       <div className="text-center pt-2">
-        <p className="text-xs text-blue-300">Total Referrals: {referralCount}</p>
+        <p className="text-xs text-blue-300">Total Referrals: {actualReferralCount}</p>
       </div>
     </div>
   );
