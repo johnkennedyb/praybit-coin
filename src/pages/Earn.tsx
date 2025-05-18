@@ -172,34 +172,20 @@ const Earn = () => {
         if (leaderboardError) {
           console.error('Error fetching leaderboard:', leaderboardError);
         } else if (leaderboardData) {
-          // Get user emails for display
-          const topUsersWithRank = await Promise.all(
-            leaderboardData.map(async (userData, index) => {
-              let email = `User ${index + 1}`;
+          // Convert the data to TopUser format with ranks
+          const topUsersWithRank = leaderboardData.map((userData, index) => {
+            // Create a masked email-like identifier using the user_id
+            const userId = userData.user_id;
+            const maskedId = userId 
+              ? `User${userId.substring(0, 2)}***${userId.substring(userId.length - 2)}`
+              : `User ${index + 1}`;
               
-              try {
-                const { data: authUser, error: authError } = await supabase
-                  .from('auth')
-                  .select('email')
-                  .eq('id', userData.user_id)
-                  .single();
-                  
-                if (!authError && authUser && authUser.email) {
-                  // Mask email for privacy
-                  email = authUser.email.replace(/(.{2})(.*)(?=@)/, (_, start, rest) => 
-                    start + '•'.repeat(Math.min(rest.length, 3)));
-                }
-              } catch (e) {
-                console.log('Could not fetch user email');
-              }
-              
-              return {
-                ...userData,
-                email,
-                rank: index + 1
-              };
-            })
-          );
+            return {
+              ...userData,
+              email: maskedId, // Using a masked user ID instead of email
+              rank: index + 1
+            };
+          });
           
           setTopUsers(topUsersWithRank);
         }
