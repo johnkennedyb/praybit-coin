@@ -91,16 +91,6 @@ const Referral = () => {
         if (referralsData) {
           setReferrals(referralsData);
         }
-
-        // Update the user_stats table to match the actual referral count
-        if (referralsData && user) {
-          await supabase
-            .from('user_stats')
-            .upsert({
-              user_id: user.id,
-              referrals: referralsData.length
-            }, { onConflict: 'user_id' });
-        }
       } catch (error: any) {
         console.error('Error loading referral data:', error.message);
       } finally {

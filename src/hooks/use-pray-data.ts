@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useWeb3 } from '@/contexts/Web3Context';
 import { useSupabase } from '@/contexts/SupabaseContext';
@@ -46,31 +47,14 @@ export function usePrayData() {
           }
           
           if (userData) {
-            // Get the latest referral count from actual referrals table
-            const { data: referralsData, error: referralsError } = await supabase
-              .from('referrals')
-              .select('*')
-              .eq('referrer_id', user.id)
-              .eq('status', 'completed');
-            
-            const actualReferralCount = referralsData?.length || 0;
-            
             // If user data exists, use it
             setData({
               coins: userData.coins || 0,
               tapsCount: userData.taps_count || 0,
-              referrals: actualReferralCount, // Use actual count from referrals table
+              referrals: userData.referrals || 0,
               lastDailyReward: userData.last_daily_reward,
               miningPower: Math.floor(1 + ((userData.taps_count || 0) / 100))
             });
-            
-            // Update the user_stats table if the referral count doesn't match
-            if (userData.referrals !== actualReferralCount) {
-              await supabase
-                .from('user_stats')
-                .update({ referrals: actualReferralCount })
-                .eq('user_id', user.id);
-            }
           } else if (user.id) {
             // If no user data in Supabase but we have local data, save it to Supabase
             const localData = JSON.parse(localStorage.getItem('praybitData') || JSON.stringify(defaultData));
@@ -169,26 +153,12 @@ export function usePrayData() {
     }));
   };
   
-  const incrementReferrals = async () => {
-    const newReferralCount = data.referrals + 1;
-    
+  const incrementReferrals = () => {
     setData(prev => ({
       ...prev,
-      referrals: newReferralCount,
+      referrals: prev.referrals + 1,
       coins: prev.coins + 10, // Add 10 coins per referral
     }));
-    
-    // Update referral count in the database if user is logged in
-    if (user) {
-      try {
-        await supabase
-          .from('user_stats')
-          .update({ referrals: newReferralCount })
-          .eq('user_id', user.id);
-      } catch (error) {
-        console.error('Error updating referral count:', error);
-      }
-    }
   };
   
   const claimDailyReward = () => {
