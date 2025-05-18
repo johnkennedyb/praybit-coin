@@ -17,12 +17,13 @@ const ReferralSystem = ({ onRefer, referralCount }: ReferralSystemProps) => {
   const [referralLink, setReferralLink] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [actualReferralCount, setActualReferralCount] = useState(referralCount);
   const { toast } = useToast();
   const { user } = useSupabase();
 
   // Fetch existing referral code or generate new one when user is loaded
   useEffect(() => {
-    const fetchReferralCode = async () => {
+    const fetchReferralData = async () => {
       if (!user) return;
       
       try {
@@ -38,14 +39,33 @@ const ReferralSystem = ({ onRefer, referralCount }: ReferralSystemProps) => {
         if (existingReferrals && existingReferrals.length > 0) {
           setReferralCode(existingReferrals[0].code);
           setReferralLink(`https://coin.praybit.com?ref=${existingReferrals[0].code}`);
+          
+          // Count completed referrals
+          const { data: completedReferrals, error: countError } = await supabase
+            .from('referrals')
+            .select('id', { count: 'exact' })
+            .eq('referrer_id', user.id)
+            .eq('status', 'completed');
+            
+          if (!countError && completedReferrals) {
+            setActualReferralCount(completedReferrals.length);
+            
+            // Update user_stats if the referral count doesn't match
+            if (completedReferrals.length !== referralCount) {
+              await supabase
+                .from('user_stats')
+                .update({ referrals: completedReferrals.length })
+                .eq('user_id', user.id);
+            }
+          }
         }
       } catch (error: any) {
         console.error('Error fetching referral code:', error.message);
       }
     };
 
-    fetchReferralCode();
-  }, [user]);
+    fetchReferralData();
+  }, [user, referralCount]);
 
   const generateReferralCode = async () => {
     if (!user) {
@@ -152,7 +172,7 @@ const ReferralSystem = ({ onRefer, referralCount }: ReferralSystemProps) => {
       )}
       
       <div className="text-center pt-2">
-        <p className="text-xs text-blue-300">Total Referrals: {referralCount}</p>
+        <p className="text-xs text-blue-300">Total Referrals: {actualReferralCount}</p>
       </div>
     </div>
   );
