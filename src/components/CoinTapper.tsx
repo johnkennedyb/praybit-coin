@@ -67,12 +67,7 @@ const CoinTapper = ({ onTap, coins, coinsPerTap, isSyncing = false }: CoinTapper
           size="lg"
           onClick={handleTap}
         >
-          <div className="relative">
-            <Coins className="h-16 w-16 text-white drop-shadow-md" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-4xl font-bold text-amber-800">P</span>
-            </div>
-          </div>
+          <Coins className="h-16 w-16 text-white drop-shadow-md" />
         </Button>
         
         {/* Particle effects */}

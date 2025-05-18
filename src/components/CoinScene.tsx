@@ -1,7 +1,7 @@
 
 import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, PresentationControls, useProgress, Html, Text } from '@react-three/drei';
+import { OrbitControls, PresentationControls, useProgress, Html } from '@react-three/drei';
 import { Sparkles } from 'lucide-react';
 
 interface CoinSceneProps {
@@ -63,17 +63,15 @@ function Coin3D({ isAnimating, onClick }: { isAnimating?: boolean; onClick?: () 
         />
       </mesh>
       
-      {/* Letter "P" in the middle */}
-      <Text 
-        position={[0, 0, 0.11]} 
-        fontSize={0.7}
-        color="#92400E"
-        font="/fonts/Inter_Bold.json"
-        anchorX="center"
-        anchorY="middle"
-      >
-        P
-      </Text>
+      {/* Text "P" in the middle */}
+      <mesh position={[0, 0, 0.11]}>
+        <torusGeometry args={[0.3, 0.1, 3, 12]} />
+        <meshStandardMaterial 
+          color="#92400E" 
+          metalness={0.2} 
+          roughness={0.8} 
+        />
+      </mesh>
       
       {/* Sparkle effect */}
       <pointLight position={[0.3, 0.3, 0.5]} intensity={0.6} color="#FFFFFF" />
