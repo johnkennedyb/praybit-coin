@@ -111,33 +111,38 @@ const Index = () => {
           </div>
           
           <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
-            <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl p-2">
-              <CardHeader className="px-6">
-                <CardTitle className="text-xl flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-yellow-400" />
-                  Praybit Mining
-                </CardTitle>
-                <CardDescription>Tap to earn PRAY tokens</CardDescription>
-              </CardHeader>
-              <CardContent className="flex justify-center px-6 pb-6">
-                <CoinTapper 
-                  onTap={handleTap}
-                  coins={data.coins || 0}
-                  coinsPerTap={data.miningPower || 1}
-                  isSyncing={isSyncing}
-                />
-                {!user && (
-                  <div className="mt-4 text-center">
-                    <p className="text-sm text-blue-200 mb-2">
-                      Register to save your progress and earn more rewards!
-                    </p>
-                    <Button onClick={() => navigate("/profile")} variant="outline">
-                      Register Now
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl p-2">
+  <CardHeader className="px-6">
+    <CardTitle className="text-xl flex items-center gap-2">
+      <Zap className="h-5 w-5 text-yellow-400" />
+      Praybit Mining
+    </CardTitle>
+    <CardDescription>Tap to earn PRAY tokens</CardDescription>
+  </CardHeader>
+  
+  <CardContent className="px-6 pb-6">
+    <div className="flex justify-center">
+      <CoinTapper 
+        onTap={handleTap}
+        coins={data.coins || 0}
+        coinsPerTap={data.miningPower || 1}
+        isSyncing={isSyncing}
+      />
+    </div>
+
+    {!user && (
+      <div className="mt-4 text-center">
+        <p className="text-sm text-blue-200 mb-2">
+          Register to save your progress and earn more rewards!
+        </p>
+        <Button onClick={() => navigate("/profile")} variant="outline">
+          Register Now
+        </Button>
+      </div>
+    )}
+  </CardContent>
+</Card>
+
 
             {user ? (
               <Card className="bg-blue-800/50 border-blue-700 backdrop-blur-md shadow-xl p-2">
