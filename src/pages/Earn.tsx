@@ -258,7 +258,7 @@ const Earn = () => {
       
       if (data) {
         setReferralCode(data);
-        setReferralLink(`https://coin.praybit.com?ref=${data}`);
+        setReferralLink(`https://coin.praybit.vercel.app?ref=${data}`);
         
         toast({
           title: "Referral link created!",

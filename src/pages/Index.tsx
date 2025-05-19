@@ -59,11 +59,14 @@ const Index = () => {
   };
   
   const handleCompleteTask = () => {
-    if (!dailyTask.isCompleted) {
-      completeTask(dailyTask.id, dailyTask.reward);
-      
-      // Mark task as completed locally
-      dailyTask.isCompleted = true;
+    const claimed = claimDailyReward(); // calls backend and updates `lastDailyReward`
+  
+    if (claimed) {
+      completeTask(1, 5); // optional: this could just be inside claimDailyReward
+      toast({
+        title: "Task Completed",
+        description: "You earned 5 PRAY tokens.",
+      });
     } else {
       toast({
         title: "Task Already Completed",
@@ -72,6 +75,7 @@ const Index = () => {
       });
     }
   };
+  
 
   return (
     <AppLayout showHeader={false}>
